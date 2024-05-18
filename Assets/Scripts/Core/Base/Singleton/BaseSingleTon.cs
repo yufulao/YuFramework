@@ -1,21 +1,27 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+// ******************************************************************
+//@file         BaseSingleTon.cs
+//@brief        单例基类
+//@author       yufulao, yufulao@qq.com
+//@createTime   2024.05.18 01:10:47
+// ******************************************************************
 
-public class BaseSingleTon<T> where T : new()
+namespace Yu
 {
-    private static T _instance;
-
-    public static T Instance
+    public class BaseSingleTon<T> where T : new()
     {
-        get
-        {
-            if (_instance == null)
-            {
-                _instance = new T();
-            }
+        private static T _instance;
 
-            return _instance;
+        public static T Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = new T();
+                }
+
+                return _instance;
+            }
         }
     }
 }

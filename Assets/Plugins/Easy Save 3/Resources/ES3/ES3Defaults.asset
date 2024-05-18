@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   settings:
     _location: 0
-    path: SaveFile.txt
+    path: SaveFile.es3
     encryptionType: 0
     compressionType: 0
     encryptionPassword: password
@@ -32,7 +32,12 @@ MonoBehaviour:
     assemblyNames:
     - Assembly-CSharp
     - Assembly-CSharp-firstpass
+    - Autodesk.Fbx
+    - Cinemachine
+    - FbxBuildTestAssets
     - IngameDebugConsole.Runtime
+    - Luban.Runtime
+    - sc.posteffects.runtime
     showAdvancedSettings: 0
   addMgrToSceneAutomatically: 0
   autoUpdateReferences: 1

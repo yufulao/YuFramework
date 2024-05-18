@@ -1,55 +1,57 @@
-using System;
-using System.Collections;
+// ******************************************************************
+//@file         FsmManager.cs
+//@brief        状态机系统
+//@author       yufulao, yufulao@qq.com
+//@createTime   2024.05.18 01:29:01
+// ******************************************************************
 using System.Collections.Generic;
-using UnityEngine;
 
-public class FsmManager : BaseSingleTon<FsmManager>,IMonoManager
+namespace Yu
 {
-    private readonly Dictionary<string, BaseFsm> _fsmDict = new Dictionary<string, BaseFsm>();
-
-    /// <summary>
-    /// 获取状态机
-    /// </summary>
-    /// <param name="fsmNameT">状态机名</param>
-    /// <typeparam name="T">状态机类型</typeparam>
-    /// <returns></returns>
-    public T GetFsmByName<T>(string fsmNameT) where T:BaseFsm,new()
+    public class FsmManager : BaseSingleTon<FsmManager>, IMonoManager
     {
-        if (_fsmDict.ContainsKey(fsmNameT))
+        private readonly Dictionary<string, BaseFsm> _fsmDict = new Dictionary<string, BaseFsm>();
+
+        /// <summary>
+        /// 获取状态机
+        /// </summary>
+        /// <typeparam name="T">状态机类型</typeparam>
+        /// <returns></returns>
+        public T GetFsm<T>() where T : BaseFsm, new()
         {
-            return _fsmDict[fsmNameT] as T;
+            var fsmName = typeof(T).ToString();
+            if (_fsmDict.ContainsKey(fsmName))
+            {
+                return _fsmDict[fsmName] as T;
+            }
+
+            var newFsm = new T();
+            _fsmDict.Add(fsmName, newFsm);
+            return newFsm;
         }
 
-        T newFsm = new T {fsmName = fsmNameT};
-        _fsmDict.Add(fsmNameT,newFsm);
-        return newFsm;
-    }
-
-    public void OnInit()
-    {
-        
-    }
-
-    public void Update()
-    {
-        foreach (var fsm in _fsmDict.Values)
+        public void OnInit()
         {
-            fsm.OnUpdate();
         }
-    }
 
-    public void FixedUpdate()
-    {
-        
-    }
+        public void Update()
+        {
+            foreach (var fsm in _fsmDict.Values)
+            {
+                fsm.OnUpdate();
+            }
+        }
 
-    public void LateUpdate()
-    {
-        
-    }
+        public void FixedUpdate()
+        {
+        }
 
-    public void OnClear()
-    {
-        
+        public void LateUpdate()
+        {
+        }
+
+        public void OnClear()
+        {
+        }
     }
 }

@@ -1,45 +1,62 @@
+// ******************************************************************
+//@file         BaseFsm.cs
+//@brief        状态机基类
+//@author       yufulao, yufulao@qq.com
+//@createTime   2024.05.18 01:07:55
+// ******************************************************************
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BaseFsm
+namespace Yu
 {
-    public string fsmName;
-    private Dictionary<Type, IFsmState> _fsmStateDic = new Dictionary<Type, IFsmState>();
-    private IFsmState _currentFsmState;
+    public abstract class BaseFsm
+    {
+        private Dictionary<Type, IFsmState> _fsmStateDic = new Dictionary<Type, IFsmState>();
+        private IFsmState _currentFsmState;
 
-    /// <summary>
-    /// 初始化这个状态机
-    /// </summary>
-    /// <param name="states">状态机将持有的状态</param>
-    public void SetFsm(Dictionary<Type, IFsmState> states)
-    {
-        _fsmStateDic = states;
-    }
-    
-    /// <summary>
-    /// 切换状态
-    /// </summary>
-    /// <param name="stateName">状态机名Enum</param>
-    public void ChangeFsmState(Type stateName)
-    {
-        if (!_fsmStateDic.ContainsKey(stateName))
+        /// <summary>
+        /// 初始化这个状态机
+        /// </summary>
+        /// <param name="states">状态机将持有的状态</param>
+        public void SetFsm(Dictionary<Type, IFsmState> states)
         {
-            Debug.Log("fsm里没有这个状态");
-            return;
+            _fsmStateDic = states;
         }
-        
-        _currentFsmState?.OnExit();
-        _currentFsmState = _fsmStateDic[stateName];
-        _currentFsmState.OnEnter();
-    }
-    
-    /// <summary>
-    /// Update每个状态机的OnUpdate
-    /// </summary>
-    public void OnUpdate()
-    {
-        _currentFsmState?.OnUpdate();
+
+        /// <summary>
+        /// 设置为空状态
+        /// </summary>
+        public void ChangeToNullState()
+        {
+            _currentFsmState?.OnExit();
+            _currentFsmState = null;
+        }
+
+        /// <summary>
+        /// 切换状态
+        /// </summary>
+        /// <param name="stateName">状态机名Enum</param>
+        /// <param name="enterParams">进入状态的参数</param>
+        public void ChangeFsmState(Type stateName, params object[] enterParams)
+        {
+            if (!_fsmStateDic.ContainsKey(stateName))
+            {
+                Debug.Log("fsm里没有这个状态");
+                return;
+            }
+
+            _currentFsmState?.OnExit();
+            _currentFsmState = _fsmStateDic[stateName];
+            _currentFsmState.OnEnter(enterParams);
+        }
+
+        /// <summary>
+        /// Update每个状态机的OnUpdate
+        /// </summary>
+        public void OnUpdate()
+        {
+            _currentFsmState?.OnUpdate();
+        }
     }
 }
