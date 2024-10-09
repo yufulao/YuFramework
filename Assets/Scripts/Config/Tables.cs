@@ -12,32 +12,35 @@ using Luban;
 
 public partial class Tables
 {
-    public CfgBGM CfgBGM {get; }
     public CfgCamera CfgCamera {get; }
     public CfgPrefab CfgPrefab {get; }
-    public CfgSFX CfgSFX {get; }
     public CfgSprite CfgSprite {get; }
     public CfgUI CfgUI {get; }
+    public CfgBGM CfgBGM {get; }
+    public CfgSFX CfgSFX {get; }
+    public CfgScene CfgScene {get; }
 
     public Tables(System.Func<string, ByteBuf> loader)
     {
-        CfgBGM = new CfgBGM(loader("cfgbgm"));
         CfgCamera = new CfgCamera(loader("cfgcamera"));
         CfgPrefab = new CfgPrefab(loader("cfgprefab"));
-        CfgSFX = new CfgSFX(loader("cfgsfx"));
         CfgSprite = new CfgSprite(loader("cfgsprite"));
         CfgUI = new CfgUI(loader("cfgui"));
+        CfgBGM = new CfgBGM(loader("cfgbgm"));
+        CfgSFX = new CfgSFX(loader("cfgsfx"));
+        CfgScene = new CfgScene(loader("cfgscene"));
         ResolveRef();
     }
     
     private void ResolveRef()
     {
-        CfgBGM.ResolveRef(this);
         CfgCamera.ResolveRef(this);
         CfgPrefab.ResolveRef(this);
-        CfgSFX.ResolveRef(this);
         CfgSprite.ResolveRef(this);
         CfgUI.ResolveRef(this);
+        CfgBGM.ResolveRef(this);
+        CfgSFX.ResolveRef(this);
+        CfgScene.ResolveRef(this);
     }
 }
 

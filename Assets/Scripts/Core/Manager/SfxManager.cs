@@ -16,7 +16,7 @@ namespace Yu
     {
         private CfgSFX _cfgSfx;
         private AudioMixer _audioMix;
-        private readonly Dictionary<SFXType, AudioMixerGroup> _sfxMixerGroupDic=new Dictionary<SFXType, AudioMixerGroup>();
+        private readonly Dictionary<DefSFXType, AudioMixerGroup> _sfxMixerGroupDic=new Dictionary<DefSFXType, AudioMixerGroup>();
         private readonly Dictionary<string, RowCfgSFX> _dataDictionary= new Dictionary<string, RowCfgSFX>();
         private Dictionary<RowCfgSFX, AudioSource> _sfxItems;
         
@@ -28,10 +28,10 @@ namespace Yu
         {
             _cfgSfx = ConfigManager.Tables.CfgSFX;
             _audioMix = AssetManager.Instance.LoadAsset<AudioMixer>("Assets/AddressableAssets/AudioMixer/AudioMixer.mixer");
-            _sfxMixerGroupDic.Add(SFXType.Se, _audioMix.FindMatchingGroups(SFXType.Se.ToString())[0]);
-            _sfxMixerGroupDic.Add(SFXType.Voice, _audioMix.FindMatchingGroups(SFXType.Voice.ToString())[0]);
+            _sfxMixerGroupDic.Add(DefSFXType.Se, _audioMix.FindMatchingGroups(DefSFXType.Se.ToString())[0]);
+            _sfxMixerGroupDic.Add(DefSFXType.Voice, _audioMix.FindMatchingGroups(DefSFXType.Voice.ToString())[0]);
 
-            var root = new GameObject("SfxManager");
+            var root = new GameObject("SFXManager");
             root.transform.SetParent(GameManager.Instance.transform, false);
             
             _sfxItems = new Dictionary<RowCfgSFX, AudioSource>();
@@ -52,13 +52,29 @@ namespace Yu
             }
         }
         
+        public void Update()
+        {
+        }
+
+        public void FixedUpdate()
+        {
+        }
+
+        public void LateUpdate()
+        {
+        }
+
+        public void OnClear()
+        {
+        }
+        
         /// <summary>
         /// 重新设置音量，在OnInit设置，有bug，进到Start里莫名其妙变回0
         /// </summary>
         public void ReloadVolume()
         {
-            _audioMix.SetFloat("SeVolume", SaveManager.GetFloat(SFXType.Se+"Volume", 0f));
-            _audioMix.SetFloat("VoiceVolume", SaveManager.GetFloat(SFXType.Voice+"Volume", 0f));
+            // _audioMix.SetFloat("SeVolume", SaveGameManager.Instance.Get<float>(DefSFXType.Se+"Volume", 0f,SaveType.Cfg));
+            // _audioMix.SetFloat("VoiceVolume", SaveGameManager.Instance.Get<float>(DefSFXType.Voice+"Volume", 0f,SaveType.Cfg));
         }
 
         /// <summary>
@@ -99,23 +115,21 @@ namespace Yu
             yield return new WaitForSeconds(delayTime);
             PlaySfx(sfxName);
         }
-        
+
         /// <summary>
         /// 停止播放音效
         /// </summary>
         /// <param name="sfxName">音效名称</param>
         public void Stop(string sfxName)
         {
-            if (_dataDictionary.ContainsKey(sfxName))
-            {
-                var rowCfgSfx = _dataDictionary[sfxName];
-                _sfxItems[rowCfgSfx].Stop();
-            }
-            else
+            if (!_dataDictionary.ContainsKey(sfxName))
             {
                 Debug.LogError("没有这个sfx名：" + sfxName);
                 return;
             }
+            
+            var rowCfgSfx = _dataDictionary[sfxName];
+            _sfxItems[rowCfgSfx].Stop();
         }
 
         /// <summary>
@@ -139,20 +153,18 @@ namespace Yu
         /// <returns></returns>
         public IEnumerator StopDelayFadeIEnumerator(string sfxName,float delayTime,float fadeOutTime)
         {
-            if (_dataDictionary.ContainsKey(sfxName))
-            {
-                var rowCfgSfx = _dataDictionary[sfxName];
-                var audioSource = _sfxItems[rowCfgSfx];
-                
-                yield return new WaitForSeconds(delayTime);
-                audioSource.DOFade(0, fadeOutTime); //音量降为0
-                yield return new WaitForSeconds(fadeOutTime);
-                audioSource.Stop();
-            }
-            else
+            if (!_dataDictionary.ContainsKey(sfxName))
             {
                 Debug.LogError("没有这个sfx名：" + sfxName);
+                yield break;
             }
+            
+            var rowCfgSfx = _dataDictionary[sfxName];
+            var audioSource = _sfxItems[rowCfgSfx];
+            yield return new WaitForSeconds(delayTime);
+            audioSource.DOFade(0, fadeOutTime); //音量降为0
+            yield return new WaitForSeconds(fadeOutTime);
+            audioSource.Stop();
         }
 
         /// <summary>
@@ -160,30 +172,14 @@ namespace Yu
         /// </summary>
         /// <param name="sfxType">音效类型</param>
         /// <param name="volumeBase">要改变的音量</param>
-        public void SetVolumeRuntime(string sfxType, float volumeBase)
+        public void SetVolumeRuntime(DefSFXType sfxType, float volumeBase)
         {
-            _audioMix.SetFloat(sfxType + "Volume", volumeBase);
+            _audioMix.SetFloat(sfxType.ToString() + "Volume", volumeBase);
         }
 
-        public void MuteVolume(string sfxType)
+        public void MuteVolume(DefSFXType sfxType)
         {
-            _audioMix.SetFloat(sfxType + "Volume", -100f);
-        }
-
-        public void Update()
-        {
-        }
-
-        public void FixedUpdate()
-        {
-        }
-
-        public void LateUpdate()
-        {
-        }
-
-        public void OnClear()
-        {
+            _audioMix.SetFloat(sfxType.ToString() + "Volume", -100f);
         }
     }
 }

@@ -16,7 +16,7 @@ public sealed partial class RowCfgSFX : Luban.BeanBase
     public RowCfgSFX(ByteBuf _buf) 
     {
         Id = _buf.ReadString();
-        SFXType = (SFXType)_buf.ReadInt();
+        SFXType = (DefSFXType)_buf.ReadInt();
         {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);ClipPaths = new System.Collections.Generic.List<string>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { string _e0;  _e0 = _buf.ReadString(); ClipPaths.Add(_e0);}}
         Volume = _buf.ReadFloat();
         OneShot = _buf.ReadBool();
@@ -35,7 +35,7 @@ public sealed partial class RowCfgSFX : Luban.BeanBase
     /// <summary>
     /// 音效类别
     /// </summary>
-    public readonly SFXType SFXType;
+    public readonly DefSFXType SFXType;
     /// <summary>
     /// 资源路径
     /// </summary>

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   settings:
     _location: 0
-    path: SaveFile.es3
+    path: DefaultFile.json
     encryptionType: 0
     compressionType: 0
     encryptionPassword: password
@@ -38,7 +38,8 @@ MonoBehaviour:
     - IngameDebugConsole.Runtime
     - Luban.Runtime
     - sc.posteffects.runtime
-    showAdvancedSettings: 0
+    - Sirenix.OdinInspector.CompatibilityLayer
+    showAdvancedSettings: 1
   addMgrToSceneAutomatically: 0
   autoUpdateReferences: 1
   addAllPrefabsToManager: 1

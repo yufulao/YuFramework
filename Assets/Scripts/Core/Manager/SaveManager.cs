@@ -5,76 +5,145 @@
 //@createTime   2024.05.18 01:29:39
 // ******************************************************************
 
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+
 namespace Yu
 {
-    public static class SaveManager
+    public class SaveManager : BaseSingleTon<SaveManager>, IMonoManager
     {
+        private static readonly Dictionary<string, ES3Settings> SettingDic = new Dictionary<string, ES3Settings>();
+
+        public void OnInit()
+        {
+            SettingDic.Clear();
+        }
+
+        public void Update()
+        {
+        }
+
+        public void FixedUpdate()
+        {
+        }
+
+        public void LateUpdate()
+        {
+        }
+
+        public void OnClear()
+        {
+        }
+
         /// <summary>
-        /// 清除所有数据
+        /// 查询是否有该项数据
         /// </summary>
-        public static void DeleteFile() => ES3.DeleteFile();
-        
+        public static bool ExistKey(string key, string fileName = null) => ES3.KeyExists(key, fileName);
+
+        /// <summary>
+        /// 查询是否有该文件
+        /// </summary>
+        /// <returns></returns>
+        public static bool ExistFile(string fileName) => ES3.FileExists(fileName);
+
+        /// <summary>
+        /// 新建指定文件
+        /// </summary>
+        public static void CreateFile(string fileName)
+        {
+            if (ExistFile(fileName))
+            {
+                Debug.LogError("文件已存在" + fileName);
+                return;
+            }
+
+            ES3.Save("FileName", fileName, fileName);
+        }
+
         /// <summary>
         /// 清除数据项
         /// </summary>
-        public static void DeleteKey(string key)
+        public static void DeleteKey(string key, string fileName = null)
         {
-            ES3.DeleteKey(key);
+            ES3.DeleteKey(key, fileName);
         }
+
+        /// <summary>
+        /// 清除指定文件
+        /// </summary>
+        public static void DeleteFile(string fileName) => ES3.DeleteFile(fileName);
         
-        public static void SetInt(string key, int i)
-        {
-            ES3.Save(key, i);
-        }
+        /// <summary>
+        /// 复制指定文件
+        /// </summary>
+        public static void CopyFile(string oldFileName, string newFileName) => ES3.CopyFile(oldFileName, newFileName);
 
-        public static int GetInt(string key, int defaultValue)
+        /// <summary>
+        /// 清除指定文件夹
+        /// </summary>
+        public static void DeleteDir(string dicName) => ES3.DeleteDirectory(dicName);
+
+        /// <summary>
+        /// 存泛型，指定文件
+        /// </summary>
+        public static void Set<T>(string key, T t, string fileName)
         {
-            if (!ES3.KeyExists(key))
+            if (ExistFile(fileName))
             {
-                SetInt(key, defaultValue);
+                ES3.Save(key, t, fileName);
+                return;
             }
 
-            return ES3.Load(key, defaultValue, ES3Settings.defaultSettings);
+            Debug.LogError("文件名不存在");
         }
 
-        public static void SetFloat(string key, float f)
+        /// <summary>
+        /// 获取泛型，指定文件
+        /// </summary>
+        public static T Get<T>(string key, T defaultValue, string fileName)
         {
-            ES3.Save(key, f);
-        }
-
-        public static float GetFloat(string key, float defaultValue)
-        {
-            if (!ES3.KeyExists(key))
+            if (ExistFile(fileName))
             {
-                SetFloat(key, defaultValue);
+                return GetWithoutFileCheck(key, defaultValue, fileName);
             }
 
-            return ES3.Load(key, defaultValue, ES3Settings.defaultSettings);
+            Debug.LogError("文件名不存在");
+            return defaultValue;
         }
 
-        public static void SetString(string key, string s)
+        /// <summary>
+        /// 获取泛型，指定文件，不检测文件是否存在
+        /// </summary>
+        public static T GetWithoutFileCheck<T>(string key, T defaultValue, string fileName)
         {
-            ES3.Save(key, s);
-        }
-
-        public static string GetString(string key, string defaultValue)
-        {
-            if (!ES3.KeyExists(key))
+            if (ExistKey(key, fileName))
             {
-                SetString(key, defaultValue);
+                return ES3.Load<T>(key, defaultValue, GetES3Settings(fileName));
             }
 
-            return ES3.LoadString(key, defaultValue, ES3Settings.defaultSettings);
+            Set(key, defaultValue, fileName);
+            return defaultValue;
         }
 
-        public static void SetT<T>(string key, T t)
+        /// <summary>
+        /// 通过fileName获取ES3Settings
+        /// </summary>
+        private static ES3Settings GetES3Settings(string fileName)
         {
-            ES3.Save<T>(key, t);
-        }
-        
-        public static T GetT<T>(string key, T defaultValue)
-        {
-            return ES3.Load<T>(key, defaultValue, ES3Settings.defaultSettings);
+            if (string.IsNullOrEmpty(fileName))
+            {
+                return ES3Settings.defaultSettings;
+            }
+
+            if (SettingDic.ContainsKey(fileName))
+            {
+                return SettingDic[fileName];
+            }
+
+            var newSetting = new ES3Settings(fileName);
+            SettingDic.Add(fileName, newSetting);
+            return newSetting;
         }
     }
 }

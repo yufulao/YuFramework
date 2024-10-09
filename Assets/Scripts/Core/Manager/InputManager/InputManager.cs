@@ -12,6 +12,9 @@ namespace Yu
     public class InputManager : BaseSingleTon<InputManager>, IMonoManager
     {
         private readonly InputActions _inputActions = new InputActions();
+        
+        public Vector2 CurrentMovement; //当前的移动输入值
+        public bool MovementPressed => CurrentMovement.x != 0 || CurrentMovement.y != 0; //移动是否大于0，无法判断是否摁下摁键，因为a和d一起摁，也是false
 
         public void OnInit()
         {
@@ -21,6 +24,7 @@ namespace Yu
             _inputActions.UI.RightClick.started += OnMouseRightClick;
             _inputActions.UI.Hold.performed += OnHoldBegin;
             _inputActions.UI.Hold.canceled += OnHoldEnd;
+            _inputActions.PlayerControl.Movement.performed += outputAction => CurrentMovement = outputAction.ReadValue<Vector2>();
         }
 
         public void Update()

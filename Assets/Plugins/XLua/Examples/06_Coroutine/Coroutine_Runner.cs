@@ -21,7 +21,6 @@ namespace XLuaTest
                 return new List<Type>()
             {
                 typeof(WaitForSeconds),
-                typeof(WWW)
             };
             }
         }

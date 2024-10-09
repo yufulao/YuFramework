@@ -13,5 +13,10 @@ namespace Yu
         OnHoldBegin,
         OnHoldEnd,
         ChangeScene,
+        
+        OnExitGame,//退出游戏时
+        OnPauseGame,//暂停游戏时
+        OnResumeGame,//继续游戏时
+        OnPauseViewClose,//暂停界面关闭时
     }
 }

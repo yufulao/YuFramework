@@ -19,7 +19,8 @@ namespace Yu
 
         public void OnInit()
         {
-            var gameObject = Object.Instantiate(new GameObject("LuaManager"), GameManager.Instance.gameObject.transform);
+            var gameObject = new GameObject("LuaManager");
+            gameObject.transform.SetParent(GameManager.Instance.gameObject.transform);
             LuaEnv.AddLoader(CustomLoader);
             //计时器
             //lua入口启动

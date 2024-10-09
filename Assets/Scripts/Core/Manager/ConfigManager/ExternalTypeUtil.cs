@@ -1,6 +1,6 @@
 // ******************************************************************
 //@file         ExternalTypeUtil.cs
-//@brief        luban自定义struct
+//@brief        luban自定义struct映射unity的struct
 //@author       yufulao, yufulao@qq.com
 //@createTime   2024.05.18 01:24:08
 // ******************************************************************
