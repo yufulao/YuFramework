@@ -81,7 +81,7 @@ namespace Yu
             {
                 //加密
                 var content = File.ReadAllBytes(fileName);
-                content = UtilsForEncode.AesEncrypt(content, "yufulao@qq.com");
+                content = Utils.AesEncrypt(content, "yufulao@qq.com");
                 File.WriteAllBytes(fileName, content);
             }
             catch (Exception e)

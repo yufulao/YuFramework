@@ -15,7 +15,7 @@ namespace UnityEngine.ResourceManagement.ResourceProviders
     /// </summary>
     public class AddressableEncode : IDataConverter
     {
-        private static byte[] Key => UtilsForEncode.StringToByte(UtilsForEncode.TrimKey("yufulao@qq.com", 16)); //修改此处密钥,需要16字节
+        private static byte[] Key => Utils.StringToByte(Utils.TrimKey("yufulao@qq.com", 16)); //修改此处密钥,需要16字节
 
         private SymmetricAlgorithm _mAlgorithm;
 

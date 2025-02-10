@@ -5,253 +5,59 @@
 //@createTime   2024.05.18 01:25:12
 // ******************************************************************
 
-using System;
-using System.Collections.Generic;
-using UnityEngine;
-
 namespace Yu
 {
-    /// <summary>
-    /// 事件管理器
-    /// </summary>
-    public class EventManager : BaseSingleTon<EventManager>, IMonoManager
+    public class EventManager : BaseSingleTon<EventManager>
     {
-        private readonly Dictionary<EventName, List<(Delegate listener, int priority)>> _eventDic = new Dictionary<EventName, List<(Delegate, int)>>();
-
         public delegate void YuEvent();
-
-        public delegate void YuEvent<in T1>(T1 t1); //泛型类型参数默认是不变的，用in来声明类型参数的逆变性，委托类型是逆变的
-
+        public delegate void YuEvent<in T1>(T1 t1);
         public delegate void YuEvent<in T1, in T2>(T1 t1, T2 t2);
-
         public delegate void YuEvent<in T1, in T2, in T3>(T1 t1, T2 t2, T3 t3);
-
-
-        public void OnInit()
-        {
-        }
-
-        public void Update()
-        {
-        }
-
-        public void FixedUpdate()
-        {
-        }
-
-        public void LateUpdate()
-        {
-        }
-
-        public void OnClear()
-        {
-        }
-
-        /// <summary>
-        /// 添加一个事件的监听者
-        /// </summary>
-        public void AddListener(EventName eventName, YuEvent action, int priority = 0)
-        {
-            OnListenerAdding(eventName, action, priority);
-        }
-
-        public void AddListener<T1>(EventName eventName, YuEvent<T1> action, int priority = 0)
-        {
-            OnListenerAdding(eventName, action, priority);
-        }
-
-        public void AddListener<T1, T2>(EventName eventName, YuEvent<T1, T2> action, int priority = 0)
-        {
-            OnListenerAdding(eventName, action, priority);
-        }
-
-        public void AddListener<T1, T2, T3>(EventName eventName, YuEvent<T1, T2, T3> action, int priority = 0)
-        {
-            OnListenerAdding(eventName, action, priority);
-        }
+        
+        private readonly EventManagerCompBase _comp; //具体逻辑实现类
 
 
         /// <summary>
-        /// 移除一个事件的监听者
+        /// 构造，此处修改具体逻辑实现类
+        /// DefaultEventManagerComp 无优先度
+        /// PriorityEventManagerComp 带优先度(有订阅性能开销)
         /// </summary>
-        public void RemoveListener(EventName eventName, YuEvent action, int priority = 0)
+        public EventManager()
         {
-            OnListenerRemoving(eventName, action, priority);
+            _comp = new PriorityEventManagerComp();
         }
-
-        public void RemoveListener<T1>(EventName eventName, YuEvent<T1> action, int priority = 0)
-        {
-            OnListenerRemoving(eventName, action, priority);
-        }
-
-        public void RemoveListener<T1, T2>(EventName eventName, YuEvent<T1, T2> action, int priority = 0)
-        {
-            OnListenerRemoving(eventName, action, priority);
-        }
-
-        public void RemoveListener<T1, T2, T3>(EventName eventName, YuEvent<T1, T2, T3> action, int priority = 0)
-        {
-            OnListenerRemoving(eventName, action, priority);
-        }
+        
+        /// <summary>
+        /// 订阅事件
+        /// </summary>
+        public void AddListener(EventName eventName, YuEvent listener, int priority = 0)=>_comp.AddListener(eventName, listener, priority);
+        public void AddListener<T1>(EventName eventName, YuEvent<T1> listener, int priority = 0) => _comp.AddListener(eventName, listener, priority);
+        
+        public void AddListener<T1, T2>(EventName eventName, YuEvent<T1, T2> listener, int priority = 0) => _comp.AddListener(eventName, listener, priority);
+        public void AddListener<T1, T2, T3>(EventName eventName, YuEvent<T1, T2, T3> listener, int priority = 0) => _comp.AddListener(eventName, listener, priority);
 
         /// <summary>
-        /// 触发事件
+        /// 取消订阅事件
         /// </summary>
-        public void Dispatch(EventName eventName)
-        {
-            if (!_eventDic.ContainsKey(eventName))
-            {
-                return;
-            }
+        public void RemoveListener(EventName eventName, YuEvent listener) => _comp.RemoveListener(eventName, listener);
 
-            foreach (var (action, _) in _eventDic[eventName])
-            {
-                if (action is YuEvent yuEvent)
-                {
-                    yuEvent.Invoke();
-                    continue;
-                }
+        public void RemoveListener<T1>(EventName eventName, YuEvent<T1> listener) => _comp.RemoveListener(eventName, listener);
 
-                Debug.LogError($"事件参数类型错误 eventId: {eventName} " +
-                               $"/ 期待的action类型是 yuEvent " +
-                               $"/ 实际的action类型是 {action.GetType().Name}");
-            }
-        }
-
-        public void Dispatch<T1>(EventName eventName, T1 param1)
-        {
-            if (!_eventDic.ContainsKey(eventName)) return;
-
-            foreach (var (action, _) in _eventDic[eventName])
-            {
-                if (action is YuEvent<T1> yuEvent)
-                {
-                    yuEvent.Invoke(param1);
-                    continue;
-                }
-
-                Debug.LogError($"事件参数类型错误 eventId: {eventName} " +
-                               $"/ 期待的action类型是 yuEvent<{typeof(T1).Name}> " +
-                               $"/ 实际的action类型是 {action.GetType().Name}");
-            }
-        }
-
-        public void Dispatch<T1, T2>(EventName eventName, T1 param1, T2 param2)
-        {
-            if (!_eventDic.ContainsKey(eventName)) return;
-
-            foreach (var (action, _) in _eventDic[eventName])
-            {
-                if (action is YuEvent<T1, T2> yuEvent)
-                {
-                    yuEvent.Invoke(param1, param2);
-                    continue;
-                }
-
-                Debug.LogError($"事件参数类型错误 eventId: {eventName} " +
-                               $"/ 期待的action类型是 yuEvent<{typeof(T1).Name}{typeof(T2).Name}> " +
-                               $"/ 实际的action类型是 {action.GetType().Name}");
-            }
-        }
-
-        public void Dispatch<T1, T2, T3>(EventName eventName, T1 param1, T2 param2, T3 param3)
-        {
-            if (!_eventDic.ContainsKey(eventName)) return;
-
-            foreach (var (action, _) in _eventDic[eventName])
-            {
-                if (action is YuEvent<T1, T2, T3> yuEvent)
-                {
-                    yuEvent.Invoke(param1, param2, param3);
-                    continue;
-                }
-
-                Debug.LogError($"事件参数类型错误 eventId: {eventName} " +
-                               $"/ 期待的action类型是 yuEvent<{typeof(T1).Name}、{typeof(T2).Name}、{typeof(T3).Name}> " +
-                               $"/ 实际的action类型是 {action.GetType().Name}");
-            }
-        }
+        public void RemoveListener<T1, T2>(EventName eventName, YuEvent<T1, T2> listener) => _comp.RemoveListener(eventName, listener);
+        
+        public void RemoveListener<T1, T2, T3>(EventName eventName, YuEvent<T1, T2, T3> listener) => _comp.RemoveListener(eventName, listener);
 
         /// <summary>
-        /// 查询当前eventName的所有已注册action及其优先度
+        /// 派发事件
         /// </summary>
-        public void PrintEventPriority(EventName eventName)
-        {
-            if (!_eventDic.ContainsKey(eventName))
-            {
-                Debug.Log($"没有注册任何action {eventName}");
-                return;
-            }
+        public void Dispatch(EventName eventName) => _comp.Dispatch(eventName);
 
-            Debug.Log($"已注册的事件：{eventName}->");
-            foreach (var (action, priority) in _eventDic[eventName])
-            {
-                Debug.Log($"Priority: {priority}, Action: {action.Method.Name}");
-            }
-        }
+        public void Dispatch<T1>(EventName eventName, T1 param) => _comp.Dispatch(eventName, param);
 
-        /// <summary>
-        /// 注册事件监听时
-        /// </summary>
-        private void OnListenerAdding(EventName eventName, Delegate listener, int priority)
-        {
-            if (!_eventDic.ContainsKey(eventName))
-            {
-                _eventDic[eventName] = new List<(Delegate, int)>();
-            }
-
-            var index = FindInsertIndex(eventName, priority);
-            _eventDic[eventName].Insert(index, (listener, priority));
-        }
-
-        /// <summary>
-        /// 依据优先度获取插入位置，二分查找
-        /// </summary>
-        private int FindInsertIndex(EventName eventName, int priority)
-        {
-            var list = _eventDic[eventName];
-            var low = 0;
-            var high = list.Count - 1;
-            while (low <= high)
-            {
-                var mid = (low + high) / 2;
-                if (list[mid].priority < priority)
-                {
-                    high = mid - 1;
-                    continue;
-                }
-
-                low = mid + 1;
-            }
-
-            return low;
-        }
-
-        /// <summary>
-        /// 移除监听的事件时
-        /// </summary>
-        private void OnListenerRemoving(EventName eventName, Delegate listener, int priority)
-        {
-            if (!_eventDic.ContainsKey(eventName))
-            {
-                return;
-            }
-
-            for (var i = 0; i < _eventDic[eventName].Count; i++)
-            {
-                if (_eventDic[eventName][i].priority != priority || _eventDic[eventName][i].listener != listener)
-                {
-                    continue;
-                }
-
-                _eventDic[eventName].RemoveAt(i);
-                break;
-            }
-
-            if (_eventDic[eventName].Count == 0)
-            {
-                _eventDic.Remove(eventName);
-            }
-        }
+        public void Dispatch<T1, T2>(EventName eventName, T1 param1, T2 param2) => _comp.Dispatch(eventName, param1, param2);
+        
+        public void Dispatch<T1, T2, T3>(EventName eventName, T1 param1, T2 param2, T3 param3) => _comp.Dispatch(eventName, param1, param2, param3);
+        
+        
     }
 }

@@ -4,6 +4,7 @@
 //@author       yufulao, yufulao@qq.com
 //@createTime   2024.05.18 01:27:57
 // ******************************************************************
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -24,11 +25,13 @@ namespace Yu
 
         public void OnInit()
         {
-            if (!_hadInit)
+            if (_hadInit)
             {
-                Addressables.InitializeAsync();
-                _hadInit = true;
+                return;
             }
+            
+            Addressables.InitializeAsync();
+            _hadInit = true;
         }
 
         public void Update()
@@ -53,34 +56,35 @@ namespace Yu
 
             _handleDict.Clear();
         }
-
-
+        
         /// <summary>
-        /// 异步加载(单个资源)
+        /// 异步加载
         /// </summary>
-        /// <typeparam name="T">资源类型</typeparam>
-        /// <param name="path">资源路径，如果为空则不会加载</param>
-        /// <param name="callBack">回调函数</param>
+        /// <param name="path"></param>
+        /// <param name="callBack"></param>
+        /// <typeparam name="T">回调函数</typeparam>
+        /// <returns></returns>
         public IEnumerator LoadAssetAsync<T>(string path, Action<T> callBack) where T : Object
         {
             if (string.IsNullOrEmpty(path))
             {
-                Debug.Log("路径不能为空");
+                Debug.LogError("路径不能为空");
                 yield break;
             }
 
             AsyncOperationHandle<T> loadHandle;
-            if (_handleDict.ContainsKey(path)) //已有handle，重复添加handle
+            if (_handleDict.TryGetValue(path, out var value)) //已有handle，重复添加handle
             {
-                loadHandle = _handleDict[path].Convert<T>();
+                loadHandle = value.Convert<T>();
                 if (loadHandle.IsDone) //如果已经操作完成，输出回调并且跳出函数
                 {
                     callBack?.Invoke(loadHandle.Result);
                     yield break;
                 }
             }
-            else //第一次添加这个handle
+            else
             {
+                //第一次添加这个handle
                 loadHandle = Addressables.LoadAssetAsync<T>(path);
                 _handleDict.Add(path, loadHandle);
             }
@@ -93,7 +97,7 @@ namespace Yu
                 yield break;
             }
 
-            Debug.Log("加载失败" + path);
+            Debug.LogError("加载失败" + path);
             Release(path);
         }
 
@@ -111,9 +115,9 @@ namespace Yu
             }
 
             AsyncOperationHandle<T> handle;
-            if (_handleDict.ContainsKey(path)) //dic中是否已经有handle操作
+            if (_handleDict.TryGetValue(path, out var value)) //dic中是否已经有handle操作
             {
-                handle = _handleDict[path].Convert<T>(); //只是获取handle，不确定是否已经complete
+                handle = value.Convert<T>(); //只是获取handle，不确定是否已经complete
             }
             else
             {
@@ -121,7 +125,7 @@ namespace Yu
                 _handleDict.Add(path, handle);
             }
 
-            T asset = handle.WaitForCompletion(); //挂起当前线程，直到操作完成为止
+            var asset = handle.WaitForCompletion(); //挂起当前线程，直到操作完成为止
 
             if (!asset)
             {
@@ -133,7 +137,7 @@ namespace Yu
 
         public GameObject LoadAssetGameObject(string path)
         {
-           return LoadAsset<GameObject>(path);
+            return LoadAsset<GameObject>(path);
         }
 
         /// <summary>
@@ -149,14 +153,14 @@ namespace Yu
             }
 
             //释放句柄，并将这个键名从字典离移除
-            if (!_handleDict.ContainsKey(path))
+            if (!_handleDict.TryGetValue(path, out var value))
             {
                 Debug.Log("没有这个handle" + path);
                 return;
             }
 
             //释放handle
-            Addressables.Release(_handleDict[path]);
+            Addressables.Release(value);
             _handleDict.Remove(path);
         }
 

@@ -4,6 +4,8 @@
 //@author       yufulao, yufulao@qq.com
 //@createTime   2024.05.18 01:30:37
 // ******************************************************************
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
@@ -14,6 +16,7 @@ namespace Yu
     public class SceneManager : BaseSingleTon<SceneManager>, IMonoManager
     {
         private readonly Dictionary<string, SceneInstance> _loadedSceneDic = new Dictionary<string, SceneInstance>(); //已加载的场景 k:资源路径 v:实例
+        public string SceneID { get; private set; }
 
         public void OnInit()
         {
@@ -37,11 +40,26 @@ namespace Yu
         }
 
         /// <summary>
+        /// 切换场景
+        /// </summary>
+        public IEnumerator ChangeScene(string sceneID)
+        {
+            var scenePath = ConfigManager.Tables.CfgScene[sceneID].ScenePath;
+            yield return ChangeSceneAsync(scenePath);
+            EventManager.Instance.Dispatch(EventName.ChangeScene);
+            SceneID = sceneID;
+        }
+
+        public IEnumerator ChangeScene(string sceneID, string characterSpawnPointId)
+        {
+            yield return ChangeScene(sceneID);
+            EventManager.Instance.Dispatch(EventName.ChangeScene, characterSpawnPointId);
+        }
+
+        /// <summary>
         /// 异步切换场景
         /// </summary>
-        /// <param name="scenePath">场景的资源路径</param>
-        /// <returns></returns>
-        public IEnumerator ChangeSceneAsync(string scenePath)
+        private IEnumerator ChangeSceneAsync(string scenePath)
         {
             //single模式切换场景
             yield return AssetManager.Instance.LoadSceneSync(scenePath, (sceneInstance) =>
@@ -54,7 +72,6 @@ namespace Yu
 
                 // 激活加载的场景
                 UnityEngine.SceneManagement.SceneManager.SetActiveScene(sceneInstance.Scene);
-                EventManager.Instance.Dispatch(EventName.ChangeScene);
             });
         }
 

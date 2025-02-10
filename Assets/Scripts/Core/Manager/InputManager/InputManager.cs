@@ -11,10 +11,10 @@ namespace Yu
 {
     public class InputManager : BaseSingleTon<InputManager>, IMonoManager
     {
-        private readonly InputActions _inputActions = new InputActions();
-        
         public Vector2 CurrentMovement; //当前的移动输入值
         public bool MovementPressed => CurrentMovement.x != 0 || CurrentMovement.y != 0; //移动是否大于0，无法判断是否摁下摁键，因为a和d一起摁，也是false
+        
+        private readonly InputActions _inputActions = new InputActions();
 
         public void OnInit()
         {
@@ -25,6 +25,8 @@ namespace Yu
             _inputActions.UI.Hold.performed += OnHoldBegin;
             _inputActions.UI.Hold.canceled += OnHoldEnd;
             _inputActions.PlayerControl.Movement.performed += outputAction => CurrentMovement = outputAction.ReadValue<Vector2>();
+            
+            _inputActions.GM.Open.started += OnGMOpen;
         }
 
         public void Update()
@@ -47,7 +49,7 @@ namespace Yu
             _inputActions.UI.Hold.canceled -= OnHoldEnd;
             _inputActions.Disable();
         }
-        
+
         /// <summary>
         /// 获取鼠标位置
         /// </summary>
@@ -65,6 +67,15 @@ namespace Yu
         public Vector3 GetTouchPosition()
         {
             return Touchscreen.current == null ? Vector3.zero : (Vector3)Touchscreen.current.position.value;
+        }
+
+        /// <summary>
+        /// GMView调试界面打开
+        /// </summary>
+        /// <param name="obj"></param>
+        private void OnGMOpen(InputAction.CallbackContext obj)
+        {
+            EventManager.Instance.Dispatch(EventName.OnGmOpen);
         }
 
         /// <summary>

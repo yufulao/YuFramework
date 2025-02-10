@@ -34,11 +34,12 @@ MonoBehaviour:
     - Assembly-CSharp-firstpass
     - Autodesk.Fbx
     - Cinemachine
+    - FancyScrollView
     - FbxBuildTestAssets
-    - IngameDebugConsole.Runtime
     - Luban.Runtime
-    - sc.posteffects.runtime
     - Sirenix.OdinInspector.CompatibilityLayer
+    - StompyRobot.SRDebugger
+    - StompyRobot.SRF
     showAdvancedSettings: 1
   addMgrToSceneAutomatically: 0
   autoUpdateReferences: 1

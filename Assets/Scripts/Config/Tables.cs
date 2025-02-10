@@ -16,6 +16,7 @@ public partial class Tables
     public CfgPrefab CfgPrefab {get; }
     public CfgSprite CfgSprite {get; }
     public CfgUI CfgUI {get; }
+    public CfgHUD CfgHUD {get; }
     public CfgBGM CfgBGM {get; }
     public CfgSFX CfgSFX {get; }
     public CfgScene CfgScene {get; }
@@ -26,6 +27,7 @@ public partial class Tables
         CfgPrefab = new CfgPrefab(loader("cfgprefab"));
         CfgSprite = new CfgSprite(loader("cfgsprite"));
         CfgUI = new CfgUI(loader("cfgui"));
+        CfgHUD = new CfgHUD(loader("cfghud"));
         CfgBGM = new CfgBGM(loader("cfgbgm"));
         CfgSFX = new CfgSFX(loader("cfgsfx"));
         CfgScene = new CfgScene(loader("cfgscene"));
@@ -38,6 +40,7 @@ public partial class Tables
         CfgPrefab.ResolveRef(this);
         CfgSprite.ResolveRef(this);
         CfgUI.ResolveRef(this);
+        CfgHUD.ResolveRef(this);
         CfgBGM.ResolveRef(this);
         CfgSFX.ResolveRef(this);
         CfgScene.ResolveRef(this);

@@ -4,72 +4,49 @@
 //@author       yufulao, yufulao@qq.com
 //@createTime   2024.05.18 01:34:18
 // ******************************************************************
+
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 namespace Yu
 {
-    public static class Utils
+    public static partial class Utils
     {
         /// <summary>
-        /// 播放动画
+        /// 随机获取count个item，允许重复
         /// </summary>
-        /// <param name="animator"></param>
-        /// <param name="animationName"></param>
-        /// <returns></returns>
-        public static IEnumerator PlayAnimation(Animator animator, string animationName)
+        public static void GetRandomItems<T>(List<T> source, int count, ref List<T> result)
         {
-            if (!animator || string.IsNullOrEmpty(animationName) || !animator.HasState(0, Animator.StringToHash(animationName)))
+            if (source == null || source.Count == 0)
             {
-                yield break;
+                throw new System.ArgumentException("Source list cannot be null or empty.");
             }
-
-            animator.Play(animationName, 0, 0f);
-            yield return new WaitForSeconds(GetAnimatorLength(animator, animationName));
-        }
-
-        /// <summary>
-        /// 获取动画时长
-        /// </summary>
-        /// <param name="animator"></param>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public static float GetAnimatorLength(Animator animator, string name)
-        {
-            float length = 0;
-
-            var clips = animator.runtimeAnimatorController.animationClips;
-            foreach (var clip in clips)
+            
+            result.Clear();
+            for (var i = 0; i < count; i++)
             {
-                if (clip.name.Equals(name))
-                {
-                    length = clip.length;
-                    break;
-                }
+                var randomIndex = Random.Range(0, source.Count);
+                result.Add(source[randomIndex]);
             }
-
-            return length;
         }
-
+        
         /// <summary>
-        /// 判断当前animator是否正在播放指定的animation
+        /// 随机执行事件,ratio从0到1
         /// </summary>
-        /// <param name="animator"></param>
-        /// <param name="animationName"></param>
-        /// <param name="layerIndex"></param>
-        /// <returns></returns>
-        public static bool IsAnimatorPlayingThisAnimation(Animator animator, string animationName, int layerIndex = 0)
+        public static void RateToDo(float ratio, Action action)
         {
-            var animatorStateInfo = animator.GetCurrentAnimatorStateInfo(layerIndex);
-            return animatorStateInfo.IsName(animationName);
+            if (Random.value < ratio)
+            {
+                action?.Invoke();
+            }
         }
-
+        
         /// <summary>
         /// 添加eventTrigger的事件
         /// </summary>
@@ -123,6 +100,21 @@ namespace Yu
             currentEventSystem.SetSelectedGameObject(selectable.gameObject);
             selectable.Select();
             selectable.OnSelect(null);
+        }
+        
+        /// <summary>
+        /// 将rectTransform的大小设置为指定的大小
+        /// </summary>
+        /// <param name="rectTransform"></param>
+        /// <param name="newSize"></param>
+        public static void SetSize(RectTransform rectTransform, Vector2 newSize) 
+        {
+            var currSize = rectTransform.rect.size;
+            var sizeDiff = newSize - currSize;
+            var pivot = rectTransform.pivot;
+            rectTransform.offsetMin -= new Vector2(sizeDiff.x * pivot.x, sizeDiff.y * pivot.y);
+            var pivot1 = rectTransform.pivot;
+            rectTransform.offsetMax += new Vector2(sizeDiff.x * (1.0f - pivot1.x), sizeDiff.y * (1.0f - pivot1.y));
         }
 
         /// <summary>
@@ -212,6 +204,26 @@ namespace Yu
             var arr = str.ToCharArray();
             Array.Reverse(arr);
             return new string(arr);
+        }
+
+        /// <summary>
+        /// 以2D形式绘制调试光线并执行实际光线投射
+        /// </summary>
+        /// <returns>The raycast hit.</returns>
+        /// <param name="rayOriginPoint">Ray origin point.</param>
+        /// <param name="rayDirection">Ray direction.</param>
+        /// <param name="rayDistance">Ray distance.</param>
+        /// <param name="mask">Mask.</param>
+        /// <param name="color">Color.</param>
+        /// <param name="drawGizmo"></param>
+        public static RaycastHit2D RayCast(Vector2 rayOriginPoint, Vector2 rayDirection, float rayDistance, LayerMask mask, Color color, bool drawGizmo = false)
+        {
+            if (drawGizmo)
+            {
+                Debug.DrawRay(rayOriginPoint, rayDirection * rayDistance, color);
+            }
+
+            return Physics2D.Raycast(rayOriginPoint, rayDirection, rayDistance, mask);
         }
     }
 }

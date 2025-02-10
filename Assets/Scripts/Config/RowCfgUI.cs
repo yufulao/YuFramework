@@ -16,9 +16,9 @@ public sealed partial class RowCfgUI : Luban.BeanBase
     public RowCfgUI(ByteBuf _buf) 
     {
         Id = _buf.ReadString();
+        UiPath = _buf.ReadString();
         Layer = _buf.ReadString();
         SortOrder = _buf.ReadInt();
-        UiPath = _buf.ReadString();
     }
 
     public static RowCfgUI DeserializeRowCfgUI(ByteBuf _buf)
@@ -31,17 +31,17 @@ public sealed partial class RowCfgUI : Luban.BeanBase
     /// </summary>
     public readonly string Id;
     /// <summary>
+    /// 资源路径
+    /// </summary>
+    public readonly string UiPath;
+    /// <summary>
     /// 所属层级
     /// </summary>
     public readonly string Layer;
     /// <summary>
-    /// canvas的层级
+    /// 图层层级
     /// </summary>
     public readonly int SortOrder;
-    /// <summary>
-    /// 预设路径
-    /// </summary>
-    public readonly string UiPath;
    
     public const int __ID__ = 82105438;
     public override int GetTypeId() => __ID__;
@@ -58,9 +58,9 @@ public sealed partial class RowCfgUI : Luban.BeanBase
     {
         return "{ "
         + "id:" + Id + ","
+        + "uiPath:" + UiPath + ","
         + "layer:" + Layer + ","
         + "sortOrder:" + SortOrder + ","
-        + "uiPath:" + UiPath + ","
         + "}";
     }
 }

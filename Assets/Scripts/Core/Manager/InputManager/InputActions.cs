@@ -690,6 +690,34 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""GM"",
+            ""id"": ""01599302-460e-4de5-b13f-6ead43476c50"",
+            ""actions"": [
+                {
+                    ""name"": ""Open"",
+                    ""type"": ""Button"",
+                    ""id"": ""97c04932-6436-4c90-9df3-c0a8b6f68054"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""d9636e5c-6f83-4dcf-9ab8-59bdcb16e2b0"",
+                    ""path"": ""<Keyboard>/backquote"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Open"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": []
@@ -713,6 +741,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         m_UI_TrackedDeviceOrientation = m_UI.FindAction("TrackedDeviceOrientation", throwIfNotFound: true);
         m_UI_Hold = m_UI.FindAction("Hold", throwIfNotFound: true);
         m_UI_Click = m_UI.FindAction("Click", throwIfNotFound: true);
+        // GM
+        m_GM = asset.FindActionMap("GM", throwIfNotFound: true);
+        m_GM_Open = m_GM.FindAction("Open", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -966,6 +997,52 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         }
     }
     public UIActions @UI => new UIActions(this);
+
+    // GM
+    private readonly InputActionMap m_GM;
+    private List<IGMActions> m_GMActionsCallbackInterfaces = new List<IGMActions>();
+    private readonly InputAction m_GM_Open;
+    public struct GMActions
+    {
+        private @InputActions m_Wrapper;
+        public GMActions(@InputActions wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Open => m_Wrapper.m_GM_Open;
+        public InputActionMap Get() { return m_Wrapper.m_GM; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(GMActions set) { return set.Get(); }
+        public void AddCallbacks(IGMActions instance)
+        {
+            if (instance == null || m_Wrapper.m_GMActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_GMActionsCallbackInterfaces.Add(instance);
+            @Open.started += instance.OnOpen;
+            @Open.performed += instance.OnOpen;
+            @Open.canceled += instance.OnOpen;
+        }
+
+        private void UnregisterCallbacks(IGMActions instance)
+        {
+            @Open.started -= instance.OnOpen;
+            @Open.performed -= instance.OnOpen;
+            @Open.canceled -= instance.OnOpen;
+        }
+
+        public void RemoveCallbacks(IGMActions instance)
+        {
+            if (m_Wrapper.m_GMActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        public void SetCallbacks(IGMActions instance)
+        {
+            foreach (var item in m_Wrapper.m_GMActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_GMActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    public GMActions @GM => new GMActions(this);
     public interface IPlayerControlActions
     {
         void OnMovement(InputAction.CallbackContext context);
@@ -986,5 +1063,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         void OnTrackedDeviceOrientation(InputAction.CallbackContext context);
         void OnHold(InputAction.CallbackContext context);
         void OnClick(InputAction.CallbackContext context);
+    }
+    public interface IGMActions
+    {
+        void OnOpen(InputAction.CallbackContext context);
     }
 }

@@ -60,7 +60,6 @@ namespace Yu
         /// </summary>
         public void ReloadVolume()
         {
-            //_audioMixer.SetFloat("BGMVolume", SaveGameManager.Instance.Get<float>("BGMVolume", 0f, SaveType.Cfg));
         }
 
         /// <summary>

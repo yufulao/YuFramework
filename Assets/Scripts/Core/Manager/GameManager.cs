@@ -24,9 +24,7 @@ namespace Yu
         {
             base.Awake();
             DontDestroyOnLoad(gameObject);
-            // Application.targetFrameRate = 120;
-
-            _managerList.Add(EventManager.Instance);
+            
             _managerList.Add(AssetManager.Instance);
             _managerList.Add(SaveManager.Instance);
             _managerList.Add(ConfigManager.Instance);
@@ -46,16 +44,28 @@ namespace Yu
             }
         }
 
-        private void Start()
+        private async void Start()
         {
-            if (test)
+            try
             {
-                IsTest();
+                if (test)
+                {
+                    await GMCommand.OnInit(); //初始化GM指令
+                    EventManager.Instance.AddListener(EventName.OnGmOpen, GMCtrl.OpenGmView);
+                }
+
+                if (crack)
+                {
+                }
+                
+                BGMManager.Instance.ReloadVolume();
+                SFXManager.Instance.ReloadVolume();
+                ReturnToTitle();
             }
-            
-            BGMManager.Instance.ReloadVolume();
-            SFXManager.Instance.ReloadVolume();
-            ReturnToTitle();
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+            }
         }
 
         private void Update()
@@ -64,6 +74,7 @@ namespace Yu
             {
                 manager.Update();
             }
+            
         }
 
         private void FixedUpdate()
@@ -95,7 +106,7 @@ namespace Yu
         /// </summary>
         public T GetComponentForGm<T>() where T : Object
         {
-            return  FindObjectOfType<T>();
+            return FindObjectOfType<T>();
         }
 
         /// <summary>
@@ -104,18 +115,6 @@ namespace Yu
         public static void ReturnToTitle()
         {
             Instance.StartCoroutine(ReturnToTitleIEnumerator());
-        }
-
-        /// <summary>
-        /// 检测esc暂停游戏，暂定
-        /// </summary>
-        public static void OnUpdateCheckPause()
-        {
-            if (!Keyboard.current.escapeKey.wasPressedThisFrame)
-            {
-                return;
-            }
-            
         }
 
         /// <summary>
@@ -132,22 +131,19 @@ namespace Yu
 #endif
         }
 
+        /// <summary>
+        /// 返回游戏标题的协程
+        /// </summary>
         private static IEnumerator ReturnToTitleIEnumerator()
         {
             UIManager.Instance.OpenWindow("LoadingView");
             UIManager.Instance.CloseLayerWindows("NormalLayer");
             CameraManager.Instance.ResetObjCamera();
             GC.Collect();
-            yield return SceneManager.Instance.ChangeSceneAsync(ConfigManager.Tables.CfgScene["SampleScene"].ScenePath);
+            yield return SceneManager.Instance.ChangeScene("SampleScene");
+            HUDManager.Instance.CloseAll();
             UIManager.Instance.CloseWindow("LoadingView");
         }
-        
-        /// <summary>
-        /// 当前是测试模式
-        /// </summary>
-        private void IsTest()
-        {
-            Instantiate(AssetManager.Instance.LoadAsset<GameObject>(ConfigManager.Tables.CfgUI["IngameDebugView"].UiPath), GameObject.Find("TopLayer").transform);
-        }
+
     }
 }

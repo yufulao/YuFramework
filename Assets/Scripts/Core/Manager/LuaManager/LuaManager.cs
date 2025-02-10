@@ -76,7 +76,7 @@ namespace Yu
             fileName = fileName.Replace(".", "/") + ".bytes";
             var assetPath = $"{GlobalDef.LuaScriptAAFolder}/{fileName}";
             //解密
-            var luaDecrypt = UtilsForEncode.AesDecrypt(AssetManager.Instance.LoadAsset<TextAsset>(assetPath).bytes, "yufulao@qq.com");
+            var luaDecrypt = Utils.AesDecrypt(AssetManager.Instance.LoadAsset<TextAsset>(assetPath).bytes, "yufulao@qq.com");
             return luaDecrypt;
         }
 

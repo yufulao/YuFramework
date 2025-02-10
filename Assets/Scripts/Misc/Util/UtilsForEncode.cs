@@ -1,6 +1,6 @@
 // ******************************************************************
 //@file         UtilsForEncode.cs
-//@brief        加密工具类
+//@brief        通用工具类(加密解密部分)
 //@author       yufulao, yufulao@qq.com
 //@createTime   2024.05.18 01:34:39
 // ******************************************************************
@@ -11,10 +11,7 @@ using System.Text;
 
 namespace Yu
 {
-    /// <summary>
-    /// 加密解密工具类
-    /// </summary>
-    public static class UtilsForEncode
+    public static partial class Utils
     {
         //UTF-8中，中文字符占3B，英文字符和数字和符号占1B
 

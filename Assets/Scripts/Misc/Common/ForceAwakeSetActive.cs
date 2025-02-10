@@ -6,16 +6,19 @@
 // ******************************************************************
 using UnityEngine;
 
-public class ForceAwakeSetActive : MonoBehaviour
+namespace Yu
 {
-    public GameObject setActiveObj;
-    public bool setActiveBool;
-
-    private void Awake()
+    public class ForceAwakeSetActive : MonoBehaviour
     {
-        if (setActiveObj.activeInHierarchy!= setActiveBool)
+        public GameObject setActiveObj;
+        public bool setActiveBool;
+
+        private void Awake()
         {
-            setActiveObj.SetActive(setActiveBool);
+            if (setActiveObj.activeInHierarchy!= setActiveBool)
+            {
+                setActiveObj.SetActive(setActiveBool);
+            }
         }
     }
 }
