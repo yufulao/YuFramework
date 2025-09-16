@@ -138,7 +138,7 @@ namespace Yu
                 return;
             }
 
-            Debug.LogError($"取消订阅失败，{listener}, 未订阅无参事件: {eventName}");
+            GameLog.Error($"取消订阅失败，{listener}, 未订阅无参事件: {eventName}");
         }
         
         /// <summary>
@@ -154,7 +154,7 @@ namespace Yu
             
             if (!dispatchingDict.TryAdd(eventName, 0)) //派发index初始为0
             {
-                Debug.LogError($"无参事件: {eventName}，发生同名递归派发成环异常。");
+                GameLog.Error($"无参事件: {eventName}，发生同名递归派发成环异常。");
                 return;
             }
             
@@ -163,7 +163,7 @@ namespace Yu
                 var dispatchingIndex = dispatchingDict[eventName];
                 //派发中移除最后一个订阅事件时，预期不越界
                 var listener = listenerList[dispatchingIndex];
-                // Debug.Log(listener.Method.Name + listener.Method.GetParameters().Length);
+                // GameLog.Info(listener.Method.Name + listener.Method.GetParameters().Length);
                 invokeOnDispatch(listener).Invoke();
                 dispatchingDict[eventName]++;
             }
@@ -183,7 +183,7 @@ namespace Yu
                     continue;
                 }
         
-                Debug.LogError($"重复添加事件: (类型: {listenerAdd}, 订阅名: {listenerAdd.Method.Name})");
+                GameLog.Error($"重复添加事件: (类型: {listenerAdd}, 订阅名: {listenerAdd.Method.Name})");
                 return true;
             }
         

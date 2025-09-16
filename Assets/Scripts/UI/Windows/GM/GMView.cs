@@ -1,33 +1,40 @@
+// ******************************************************************
+//@file         GMView.cs
+//@brief        GM指令界面View
+//@author       yufulao, yufulao@qq.com
+//@createTime   2025.02.27 15:13:10
+// ******************************************************************
+
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Yu;
 
-/// <summary>
-/// GM指令界面View
-/// </summary>
 public class GMView : MonoBehaviour
 {
     public GameObject objMask;
     public Animator animator;
     public Button btnBack;
     public GMGridView gridView;
+    public Transform containerGmTab;
+    public ToggleGroup toggleGroupTab;
+    // public List<Button> gmBtnList = new(); // GM指令按钮列表
     
-
-    /// <summary>
-    /// 初始化
-    /// </summary>
-    public void OnInit()
-    {
-        
-    }
+    // [Serializable]
+    // public struct CommandBtnInfo
+    // {
+    //     public int btnWidth;
+    //     public int btnHeight;
+    // }
+    // public CommandBtnInfo commandBtnInfo;
+    
 
     /// <summary>
     /// 打开窗口
     /// </summary>
     public void OpenWindow()
     {
+        
         objMask.SetActive(false);
         gameObject.SetActive(true);
         animator.Play("Show", 0, 0f);

@@ -20,14 +20,12 @@ public class HomeCtrl : UICtrlBase
 
     public override void OpenRoot(params object[] param)
     {
-        //EventManager.Instance.AddListener(EventName.OnLastSaveGameChange, OnLastSaveGameChange);
         _view.OnOpen();
     }
 
     public override void CloseRoot()
     {
         _view.OnClose();
-        //EventManager.Instance.RemoveListener(EventName.OnLastSaveGameChange, OnLastSaveGameChange);
     }
 
     public override void OnClear()
@@ -36,65 +34,6 @@ public class HomeCtrl : UICtrlBase
 
     public override void BindEvent()
     {
-        // _view.btnNewGame.onClick.AddListener(BtnOnClickNewGame);
-        // _view.btnContinue.onClick.AddListener(BtnOnClickContinue);
-        _view.btnLoad.onClick.AddListener(BtnOnClickLoad);
-        _view.btnSetting.onClick.AddListener(BtnOnClickSetting);
-        _view.btnQuit.onClick.AddListener(GameManager.QuitApplication);
+
     }
-
-    /// <summary>
-    /// 新游戏
-    /// </summary>
-    private static void BtnOnClickNewGame()
-    {
-    }
-
-    /// <summary>
-    /// 读取存档
-    /// </summary>
-    private static void BtnOnClickLoad()
-    {
-        UIManager.Instance.OpenWindow("LoadGameView");
-    }
-
-    /// <summary>
-    /// 设置
-    /// </summary>
-    private static void BtnOnClickSetting()
-    {
-        UIManager.Instance.OpenWindow("SettingView");
-    }
-
-    // /// <summary>
-    // /// 继续游戏
-    // /// </summary>
-    // private void BtnOnClickContinue()
-    // {
-    //     var saveGameIndex = SaveManager.Get(GlobalDef.LastSaveGameIndex, -1, SaveType.Global);
-    //     if (saveGameIndex < 0)
-    //     {
-    //         Debug.LogError("存档序号错误");
-    //         _view.RefreshLastSaveGame();
-    //         return;
-    //     }
-    //
-    //     //新建存档
-    //     if (!SaveManager.ExistFile(SaveManager.GetSaveGameFileName(saveGameIndex)))
-    //     {
-    //         GameManager.Instance.CreatSaveGame(saveGameIndex);
-    //         GameManager.Instance.LoadSaveGame(saveGameIndex);
-    //         return;
-    //     }
-    //
-    //     GameManager.Instance.LoadSaveGame(saveGameIndex);
-    // }
-
-    // /// <summary>
-    // /// 当前最新存档发生变化时
-    // /// </summary>
-    // private void OnLastSaveGameChange()
-    // {
-    //     _view.RefreshLastSaveGame();
-    // }
 }

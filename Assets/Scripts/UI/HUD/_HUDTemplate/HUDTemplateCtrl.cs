@@ -8,7 +8,6 @@ public class HUDTemplateCtrl : HUDBase
 
     public override void OnInit()
     {
-        base.OnInit();
         _model = new HUDTemplateModel();
         _view = GetComponent<HUDTemplateView>();
         _model.OnInit();
@@ -21,5 +20,10 @@ public class HUDTemplateCtrl : HUDBase
     public override void CloseRoot()
     {
         _view.CloseWindow();
+    }
+
+    public override void OnDestroy()
+    {
+        
     }
 }

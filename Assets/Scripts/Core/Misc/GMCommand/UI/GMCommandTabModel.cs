@@ -19,7 +19,6 @@ public class GMCommandTabModel
     /// <summary>
     /// 初始化
     /// </summary>
-    /// <returns></returns>
     public void OnInit()
     {
         MatchingCommandSuggestions = new List<GMMethodData>(8);
@@ -57,10 +56,6 @@ public class GMCommandTabModel
     /// <summary>
     /// 检测是否需要刷新代码补全提示
     /// </summary>
-    /// <param name="caretArgumentIndex"></param>
-    /// <param name="commandChanged"></param>
-    /// <param name="commandNameOrParametersChanged"></param>
-    /// <returns></returns>
     public bool CheckNeedToRefreshSuggestion(int caretArgumentIndex, bool commandChanged, bool commandNameOrParametersChanged)
     {
         if (caretArgumentIndex == _commandInputFieldPrevCaretArgumentIndex)

@@ -34,7 +34,6 @@ public class GMCommandTab : MonoBehaviour
     /// <summary>
     /// 初始化
     /// </summary>
-    /// <returns></returns>
     private void OnInit()
     {
         inputFieldCommand.onValidateInput += OnValidateInput; //输入字符回调
@@ -100,7 +99,6 @@ public class GMCommandTab : MonoBehaviour
     /// <summary>
     /// 内容更改时回调
     /// </summary>
-    /// <param name="command"></param>
     private void OnValueChanged(string command)
     {
         if (!GMCommand.HadInit)
@@ -125,7 +123,6 @@ public class GMCommandTab : MonoBehaviour
     /// <summary>
     /// inputField失去聚焦
     /// </summary>
-    /// <param name="command"></param>
     private void OnEndEdit(string command)
     {
         if (commandSuggestionsContainer.gameObject.activeSelf)
@@ -164,7 +161,6 @@ public class GMCommandTab : MonoBehaviour
     /// <summary>
     /// 打开代码补全提示界面
     /// </summary>
-    /// <param name="caretArgumentIndex"></param>
     private void OpenSuggestionContainer(int caretArgumentIndex)
     {
         commandSuggestionsContainer.gameObject.SetActive(true); //打开补全提示界面
@@ -244,8 +240,6 @@ public class GMCommandTab : MonoBehaviour
     /// <summary>
     /// 预设置补全代码提示的内容
     /// </summary>
-    /// <param name="index"></param>
-    /// <param name="caretArgumentIndex"></param>
     private void PreSetSharedStringBuilder(int index, int caretArgumentIndex)
     {
         var suggestedCommand = _model.MatchingCommandSuggestions[index];

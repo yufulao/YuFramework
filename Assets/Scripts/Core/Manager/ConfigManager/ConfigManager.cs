@@ -4,6 +4,7 @@
 //@author       yufulao, yufulao@qq.com
 //@createTime   2024.05.18 01:23:38
 // ******************************************************************
+
 using Luban;
 using UnityEngine;
 
@@ -16,6 +17,11 @@ namespace Yu
 
         public void OnInit()
         {
+            if (Tables != null)
+            {
+                return;
+            }
+
             Tables = new Tables(LoadByteBuf);
         }
 
@@ -38,11 +44,9 @@ namespace Yu
         /// <summary>
         /// 从file中读取字节流
         /// </summary>
-        /// <param name="file"></param>
-        /// <returns></returns>
         private static ByteBuf LoadByteBuf(string file)
         {
-            return new ByteBuf(AssetManager.Instance.LoadAsset<TextAsset>($"Assets/AddressableAssets/Config/{file}.bytes").bytes);
+            return new ByteBuf(AssetManager.LoadAsset<TextAsset>($"Assets/AddressableAssets/Config/{file}.bytes").bytes);
         }
     }
 }

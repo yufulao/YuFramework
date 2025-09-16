@@ -55,7 +55,7 @@ namespace Yu
             var type = typeof(T);
             if (_pools.ContainsKey(type))
             {
-                Debug.LogWarning("已有对象池"+typeof(T));
+                GameLog.Warn("已有对象池"+typeof(T));
                 return;
             }
 
@@ -88,7 +88,7 @@ namespace Yu
                 return pool.Get();
             }
 
-            Debug.LogError("没有这个对象的对象池");
+            GameLog.Error("没有这个对象的对象池");
             return default;
         }
 

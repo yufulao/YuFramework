@@ -23,10 +23,10 @@ using Yu;
 
 public class SampleSorterAndFilter
 {
-    private readonly ItemTestSorter _sorter = new ItemTestSorter();
-    private readonly ItemTestFilter _filter = new ItemTestFilter();
+    private readonly ItemTestSorter _sorter = new();
+    private readonly ItemTestFilter _filter = new();
 
-    private readonly List<ItemTest> _data = new List<ItemTest>()
+    private readonly List<ItemTest> _data = new()
     {
         new ItemTest() {Name = "3", ItemType = ItemTestType.D, ItemType2 = ItemTestType2.Cc},
         new ItemTest() {Name = "3", ItemType = ItemTestType.C, ItemType2 = ItemTestType2.Aa},
@@ -49,7 +49,7 @@ public class SampleSorterAndFilter
     public void SorterByName()
     {
         _sorter.Sort(_data, "SorterByName", true, null);
-        Debug.Log("SorterByName: true");
+        GameLog.Info("SorterByName: true");
         LogResult(_data);
     }
 
@@ -64,7 +64,7 @@ public class SampleSorterAndFilter
             ("SorterByType2", true, null)
         });
 
-        Debug.Log("SorterByTypeThenType2: true true");
+        GameLog.Info("SorterByTypeThenType2: true true");
         LogResult(_data);
     }
 
@@ -77,7 +77,7 @@ public class SampleSorterAndFilter
     public void FilterByOneName()
     {
         _filter.Filter(_data, ref _cacheFilterResult, "FilterByOneName", "3");
-        Debug.Log("FilterByOneName: 3");
+        GameLog.Info("FilterByOneName: 3");
         LogResult(_cacheFilterResult);
     }
     
@@ -91,7 +91,7 @@ public class SampleSorterAndFilter
             ("FilterByOneName",new object[]{"2"}),
             ("FilterByOneName",new object[]{"3"})
         });
-        Debug.Log("FilterByTwoName: 2 or 3");
+        GameLog.Info("FilterByTwoName: 2 or 3");
         LogResult(_cacheFilterResult);
     }
 
@@ -101,7 +101,7 @@ public class SampleSorterAndFilter
     public void FilterByType()
     {
         _filter.Filter(_data, ref _cacheFilterResult, "FilterByType", ItemTestType.D);
-        Debug.Log("FilterByType: D");
+        GameLog.Info("FilterByType: D");
         LogResult(_cacheFilterResult);
     }
 
@@ -113,7 +113,7 @@ public class SampleSorterAndFilter
         //也可以使用多条件过滤，比如上面 FilterByTwoName() ，isAll设为true 即多条件同时满足
         //Filter(IEnumerable<ItemTest> sourceList, ref List<ItemTest> resultList, true, IEnumerable<(string filterId, object[] customParams)> filters) 
         _filter.Filter(_data, ref _cacheFilterResult, "FilterByTypeAndType2", ItemTestType.D,ItemTestType2.Cc);
-        Debug.Log("FilterByTypeAndType2: D  Cc");
+        GameLog.Info("FilterByTypeAndType2: D  Cc");
         LogResult(_cacheFilterResult);
     }
 
@@ -129,7 +129,7 @@ public class SampleSorterAndFilter
             result += item.Name + "  " + item.ItemType + "  " + item.ItemType2 + "\n";
         }
 
-        Debug.Log(result);
+        GameLog.Info(result);
     }
 }
 
@@ -229,12 +229,12 @@ public class ItemTestFilter : FilterBase<string, ItemTest>
     {
         if (customParams == null || customParams.Length <= 0)
         {
-            return _ => true;
+            return _ => false;
         }
 
         if (customParams[0] is not ItemTestType orderType)
         {
-            return _ => true;
+            return _ => false;
         }
 
         //闭包的函数体，全局仅一份，即下面这行
@@ -245,12 +245,12 @@ public class ItemTestFilter : FilterBase<string, ItemTest>
     {
         if (customParams == null || customParams.Length <= 1)
         {
-            return _ => true;
+            return _ => false;
         }
 
         if (customParams[0] is not ItemTestType orderType || customParams[1] is not ItemTestType2 orderType2)
         {
-            return _ => true;
+            return _ => false;
         }
         
         return x => x.ItemType == orderType && x.ItemType2 == orderType2;
@@ -260,12 +260,12 @@ public class ItemTestFilter : FilterBase<string, ItemTest>
     {
         if (customParams == null || customParams.Length <= 0)
         {
-            return _ => true;
+            return _ => false;
         }
 
         if (customParams[0] is not string orderName)
         {
-            return _ => true;
+            return _ => false;
         }
 
         return x => x.Name.Equals(orderName);

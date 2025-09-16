@@ -17,7 +17,7 @@ namespace Yu
     {
         public delegate bool ParseFunction(string input, out object output);
 
-        public static readonly Dictionary<Type, ParseFunction> ParseFunctions = new Dictionary<Type, ParseFunction>()
+        public static readonly Dictionary<Type, ParseFunction> ParseFunctions = new()
         {
             { typeof(string), ParseString },
             { typeof(bool), ParseBool },
@@ -55,7 +55,7 @@ namespace Yu
         /// </summary>
         public static bool ParseArgument(string argument, Type parseType, out object argumentFixed)
         {
-            // Debug.Log(argument+"  "+ parseType);
+            // GameLog.Info(argument+"  "+ parseType);
             if (ParseFunctions.TryGetValue(parseType, out var parseFunction)) //自定义可转类型
             {
                 return parseFunction(argument, out argumentFixed);
@@ -112,11 +112,11 @@ namespace Yu
 
             //获取parameterType基类GmParameterOptionsBase<T>的泛型类型
             var genericArguments = parameterTypeBase.GetGenericArguments();
-            // Debug.Log(parameterType);
-            // Debug.Log(parameterTypeBase);
-            // Debug.Log(parameterTypeBase.IsGenericType);
-            // Debug.Log(parameterTypeBase.GetGenericTypeDefinition() == typeof(GmParameterOptionsBase<>));
-            // Debug.Log(Utils.ToStringArray(genericArguments));
+            // GameLog.Info(parameterType);
+            // GameLog.Info(parameterTypeBase);
+            // GameLog.Info(parameterTypeBase.IsGenericType);
+            // GameLog.Info(parameterTypeBase.GetGenericTypeDefinition() == typeof(GmParameterOptionsBase<>));
+            // GameLog.Info(Utils.ToStringArray(genericArguments));
             if (genericArguments.Length <= 0)
             {
                 argumentFixed = null;
@@ -128,7 +128,7 @@ namespace Yu
             // var genericType = typeof(GmParameterOptionsBase<>).MakeGenericType(realType);
             if (!ParseArgument(argument, realType, out argumentFixed)) //多层代理参数也适用
             {
-                Debug.LogWarning($"无法将str:{argument}，转换为代理参数:{parameterTypeProxy}");
+                GameLog.Warn($"无法将str:{argument}，转换为代理参数:{parameterTypeProxy}");
                 return true;
             }
 
@@ -463,7 +463,6 @@ namespace Yu
         /// <summary>
         /// 转数组
         /// </summary>
-        /// <returns></returns>
         private static bool ParseArray(string input, Type arrayType, out object output)
         {
             var valuesToParse = new List<string>(2);

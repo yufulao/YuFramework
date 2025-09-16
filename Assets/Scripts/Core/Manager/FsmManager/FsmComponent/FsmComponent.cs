@@ -13,7 +13,7 @@ namespace Yu
     public class FsmComponent<Owner, Key>
     {
         private readonly Owner _owner;
-        private Dictionary<Key, IFsmComponentState<Owner>> _fsmStateDic = new Dictionary<Key, IFsmComponentState<Owner>>();
+        private Dictionary<Key, IFsmComponentState<Owner>> _fsmStateDic = new();
         protected IFsmComponentState<Owner> CurrentState;
         public Key CurrentStateKey { get; private set; }
 
@@ -42,7 +42,7 @@ namespace Yu
         {
             if (!_fsmStateDic.ContainsKey(stateKey))
             {
-                Debug.LogError("fsm里没有这个状态");
+                GameLog.Error("fsm里没有这个状态");
                 return;
             }
 

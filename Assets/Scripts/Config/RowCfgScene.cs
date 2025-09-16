@@ -16,6 +16,8 @@ public sealed partial class RowCfgScene : Luban.BeanBase
     public RowCfgScene(ByteBuf _buf) 
     {
         Id = _buf.ReadString();
+        Idx = _buf.ReadString();
+        ImgKey = _buf.ReadInt();
         ScenePath = _buf.ReadString();
         BGM = _buf.ReadString();
     }
@@ -29,6 +31,14 @@ public sealed partial class RowCfgScene : Luban.BeanBase
     /// 场景名
     /// </summary>
     public readonly string Id;
+    /// <summary>
+    /// 索引名
+    /// </summary>
+    public readonly string Idx;
+    /// <summary>
+    /// 场景名提示图片
+    /// </summary>
+    public readonly int ImgKey;
     /// <summary>
     /// 资源路径
     /// </summary>
@@ -46,12 +56,16 @@ public sealed partial class RowCfgScene : Luban.BeanBase
         
         
         
+        
+        
     }
 
     public override string ToString()
     {
         return "{ "
         + "id:" + Id + ","
+        + "idx:" + Idx + ","
+        + "imgKey:" + ImgKey + ","
         + "scenePath:" + ScenePath + ","
         + "BGM:" + BGM + ","
         + "}";

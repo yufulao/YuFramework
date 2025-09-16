@@ -17,8 +17,8 @@ namespace Yu
     {
         private CfgSFX _cfgSfx;
         private AudioMixer _audioMix;
-        private readonly Dictionary<DefSFXType, AudioMixerGroup> _sfxMixerGroupDic = new Dictionary<DefSFXType, AudioMixerGroup>();
-        private readonly Dictionary<string, RowCfgSFX> _dataDictionary = new Dictionary<string, RowCfgSFX>();
+        private readonly Dictionary<DefSFXType, AudioMixerGroup> _sfxMixerGroupDic = new();
+        private readonly Dictionary<string, RowCfgSFX> _dataDictionary = new();
         private Dictionary<RowCfgSFX, AudioSource> _sfxItems;
 
 
@@ -28,7 +28,7 @@ namespace Yu
         public void OnInit()
         {
             _cfgSfx = ConfigManager.Tables.CfgSFX;
-            _audioMix = AssetManager.Instance.LoadAsset<AudioMixer>("Assets/AddressableAssets/AudioMixer/AudioMixer.mixer");
+            _audioMix = AssetManager.LoadAsset<AudioMixer>("Assets/AddressableAssets/AudioMixer/AudioMixer.mixer");
             _sfxMixerGroupDic.Add(DefSFXType.Se, _audioMix.FindMatchingGroups(DefSFXType.Se.ToString())[0]);
             _sfxMixerGroupDic.Add(DefSFXType.Voice, _audioMix.FindMatchingGroups(DefSFXType.Voice.ToString())[0]);
 
@@ -74,8 +74,8 @@ namespace Yu
         /// </summary>
         public void ReloadVolume()
         {
-            // _audioMix.SetFloat("SeVolume", SaveGameManager.Instance.Get<float>(DefSFXType.Se+"Volume", 0f,SaveType.Cfg));
-            // _audioMix.SetFloat("VoiceVolume", SaveGameManager.Instance.Get<float>(DefSFXType.Voice+"Volume", 0f,SaveType.Cfg));
+            // _audioMix.SetFloat("SeVolume", SaveGameManager.Instance.Get<float>(DefSFXType.Se + "Volume", 0f, SaveType.Cfg));
+            // _audioMix.SetFloat("VoiceVolume", SaveGameManager.Instance.Get<float>(DefSFXType.Voice + "Volume", 0f, SaveType.Cfg));
         }
 
         /// <summary>
@@ -86,29 +86,29 @@ namespace Yu
         {
             if (!_dataDictionary.TryGetValue(sfxName, out var rowCfgSfx))
             {
-                Debug.LogError("没有这个sfx：" + sfxName);
+                GameLog.Error("没有这个sfx：" + sfxName);
                 return;
             }
 
-            var clip = AssetManager.Instance.LoadAsset<AudioClip>(rowCfgSfx.ClipPaths[Random.Range(0, rowCfgSfx.ClipPaths.Count)]);
+            var clip = AssetManager.LoadAsset<AudioClip>(rowCfgSfx.ClipPaths[Random.Range(0, rowCfgSfx.ClipPaths.Count)]);
             if (rowCfgSfx.OneShot)
             {
                 _sfxItems[rowCfgSfx].PlayOneShot(clip, rowCfgSfx.Volume);
-                return;
             }
-
-            _sfxItems[rowCfgSfx].Stop();
-            _sfxItems[rowCfgSfx].clip = clip;
-            _sfxItems[rowCfgSfx].loop = rowCfgSfx.Loop;
-            _sfxItems[rowCfgSfx].volume = rowCfgSfx.Volume;
-            _sfxItems[rowCfgSfx].Play();
-            // Debug.Log(rowCfgSfx.key+"   "+_sfxItems[rowCfgSfx].loop);
+            else
+            {
+                _sfxItems[rowCfgSfx].Stop();
+                _sfxItems[rowCfgSfx].clip = clip;
+                _sfxItems[rowCfgSfx].loop = rowCfgSfx.Loop;
+                _sfxItems[rowCfgSfx].volume = rowCfgSfx.Volume;
+                _sfxItems[rowCfgSfx].Play();
+                // GameLog.Info(rowCfgSfx.key+"   "+_sfxItems[rowCfgSfx].loop);
+            }
         }
 
         /// <summary>
         /// 延迟播放SFX
         /// </summary>
-        /// <returns></returns>
         public IEnumerator PlaySfxDelay(string sfxName, float delayTime)
         {
             yield return new WaitForSeconds(delayTime);
@@ -118,12 +118,11 @@ namespace Yu
         /// <summary>
         /// 停止播放音效
         /// </summary>
-        /// <param name="sfxName">音效名称</param>
         public void Stop(string sfxName)
         {
             if (!_dataDictionary.TryGetValue(sfxName, out var rowCfgSfx))
             {
-                Debug.LogError("没有这个sfx名：" + sfxName);
+                GameLog.Error("没有这个sfx名：" + sfxName);
                 return;
             }
 
@@ -145,15 +144,15 @@ namespace Yu
         /// <summary>
         /// 延迟淡出停止音效
         /// </summary>
-        /// <param name="sfxName"></param>
-        /// <param name="delayTime"></param>
-        /// <param name="fadeOutTime"></param>
+        /// <param name="sfxName">音效名</param>
+        /// <param name="delayTime">停止播放延迟时长</param>
+        /// <param name="fadeOutTime">淡出时长</param>
         /// <returns></returns>
         public IEnumerator StopDelayFadeIEnumerator(string sfxName, float delayTime, float fadeOutTime)
         {
             if (!_dataDictionary.TryGetValue(sfxName, out var rowCfgSfx))
             {
-                Debug.LogError("没有这个sfx名：" + sfxName);
+                GameLog.Error("没有这个sfx名：" + sfxName);
                 yield break;
             }
 
@@ -171,12 +170,12 @@ namespace Yu
         /// <param name="volumeBase">要改变的音量</param>
         public void SetVolumeRuntime(DefSFXType sfxType, float volumeBase)
         {
-            _audioMix.SetFloat(sfxType.ToString() + "Volume", volumeBase);
+            _audioMix.SetFloat(sfxType + "Volume", volumeBase);
         }
 
         public void MuteVolume(DefSFXType sfxType)
         {
-            _audioMix.SetFloat(sfxType.ToString() + "Volume", -100f);
+            _audioMix.SetFloat(sfxType + "Volume", -100f);
         }
     }
 }

@@ -5,7 +5,6 @@
 //@createTime   2024.05.18 01:30:37
 // ******************************************************************
 
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
@@ -15,7 +14,7 @@ namespace Yu
 {
     public class SceneManager : BaseSingleTon<SceneManager>, IMonoManager
     {
-        private readonly Dictionary<string, SceneInstance> _loadedSceneDic = new Dictionary<string, SceneInstance>(); //已加载的场景 k:资源路径 v:实例
+        private readonly Dictionary<string, SceneInstance> _loadedSceneDic = new(); //已加载的场景 k:资源路径 v:实例
         public string SceneID { get; private set; }
 
         public void OnInit()
@@ -50,26 +49,15 @@ namespace Yu
             SceneID = sceneID;
         }
 
-        public IEnumerator ChangeScene(string sceneID, string characterSpawnPointId)
-        {
-            yield return ChangeScene(sceneID);
-            EventManager.Instance.Dispatch(EventName.ChangeScene, characterSpawnPointId);
-        }
-
         /// <summary>
         /// 异步切换场景
         /// </summary>
         private IEnumerator ChangeSceneAsync(string scenePath)
         {
             //single模式切换场景
-            yield return AssetManager.Instance.LoadSceneSync(scenePath, (sceneInstance) =>
+            yield return AssetManager.LoadSceneSync(scenePath, (sceneInstance) =>
             {
-                DOTween.KillAll();
-                if (!_loadedSceneDic.ContainsKey(scenePath))
-                {
-                    _loadedSceneDic.Add(scenePath, sceneInstance);
-                }
-
+                _loadedSceneDic.TryAdd(scenePath, sceneInstance);
                 // 激活加载的场景
                 UnityEngine.SceneManagement.SceneManager.SetActiveScene(sceneInstance.Scene);
             });
@@ -78,10 +66,10 @@ namespace Yu
         /// <summary>
         /// 卸载场景
         /// </summary>
-        /// <param name="scenePath"> 场景名称 </param>
+        /// <param name="scenePath">场景在ab包的路径</param>
         private void UnloadScene(string scenePath)
         {
-            AssetManager.Instance.UnloadScene(_loadedSceneDic[scenePath]);
+            AssetManager.UnloadScene(_loadedSceneDic[scenePath]);
             _loadedSceneDic.Remove(scenePath);
         }
     }

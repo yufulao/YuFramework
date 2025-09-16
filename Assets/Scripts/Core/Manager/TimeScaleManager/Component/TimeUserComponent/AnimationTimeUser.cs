@@ -24,7 +24,7 @@ namespace Yu
             {
                 if (found && Math.Abs(firstAnimationStateSpeed - animationState.speed) > 0f)
                 {
-                    Debug.LogWarning("不支持每个状态的不同动画速度");
+                    GameLog.Warn("不支持每个状态的不同动画速度");
                 }
 
                 firstAnimationStateSpeed = animationState.speed;

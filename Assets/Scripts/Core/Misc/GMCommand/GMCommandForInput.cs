@@ -14,9 +14,9 @@ namespace Yu
 {
     public partial class GMCommand
     {
-        private static readonly List<GMMethodData> MatchingMethods = new List<GMMethodData>(4); //runtime匹配的函数
-        private static readonly List<string> CommandArguments = new List<string>(8); //实参数据，[0]是指令名
-        private static readonly string[] InputDelimiters = new string[] { "\"\"", "''", "{}", "()", "[]" }; //指令的分隔符
+        private static readonly List<GMMethodData> MatchingMethods = new(4); //runtime匹配的函数
+        private static readonly List<string> CommandArguments = new(8); //实参数据，[0]是指令名
+        private static readonly string[] InputDelimiters = { "\"\"", "''", "{}", "()", "[]" }; //指令的分隔符
 
 
         /// <summary>
@@ -33,13 +33,13 @@ namespace Yu
             var methodToExecute = SetCommandParameters(parameters); //装填指令的参数值
             if (methodToExecute == null)
             {
-                Debug.LogWarning("找不到method->" + commandName);
+                GameLog.Warn("找不到method->" + commandName);
                 return;
             }
 
             ExecuteCommand(methodToExecute, parameters);
         }
-        
+
         /// <summary>
         /// 获取下一条自动补全的指令，摁tab时调用
         /// </summary>
@@ -110,7 +110,7 @@ namespace Yu
                     matchingCommands.Add(MethodDataList[i]);
                 }
             }
-            
+
             return commandResult;
         }
 
@@ -146,17 +146,17 @@ namespace Yu
 
             if (MatchingMethods.Count == 0)
             {
-                Debug.LogWarning("找不到指令" + command);
+                GameLog.Warn("找不到指令" + command);
                 return false;
             }
 
             if (parameterCountMismatch)
             {
-                Debug.LogWarning("指令参数不匹配" + command);
+                GameLog.Warn("指令参数不匹配" + command);
                 return false;
             }
 
-            Debug.LogWarning("找不到指令" + command);
+            GameLog.Warn("找不到指令" + command);
             return false;
         }
 
@@ -181,7 +181,6 @@ namespace Yu
         /// <summary>
         /// 装填单条指令的参数值
         /// </summary>
-        /// <returns></returns>
         private static bool SetCommandParametersPer(GMMethodData method, object[] parameters)
         {
             var success = true;
@@ -200,12 +199,12 @@ namespace Yu
 
                     //转换失败
                     success = false;
-                    Debug.LogWarning("无法将参数" + argument + "转换为" + parameterType);
+                    GameLog.Warn("无法将参数" + argument + "转换为" + parameterType);
                 }
                 catch (Exception e)
                 {
                     success = false;
-                    Debug.LogWarning("参数获取失败：" + e);
+                    GameLog.Warn("参数获取失败：" + e);
                 }
             }
 
@@ -305,7 +304,7 @@ namespace Yu
             {
                 commandIndex = ~commandIndex;
             }
-            
+
             var commandLastIndex = commandIndex;
             if (commandIndex >= MethodDataList.Count || !GMCommandUtils.IsPrefix(MethodDataList[commandIndex].Method.Name, commandPrefix))
             {
@@ -321,7 +320,7 @@ namespace Yu
             {
                 commandLastIndex++;
             }
-            
+
             return (commandIndex, commandLastIndex);
         }
 
@@ -349,15 +348,11 @@ namespace Yu
                 if (startDelimiterIndexOfDelimiterGroup >= 0)
                 {
                     endDelimiterIndexOfCommand = EndDelimiterIndexOfCommand(commandOriginal, startDelimiterIndexOfDelimiterGroup, i + 1);
-                    // if (!commandNameCalculated)
-                    // {
-                    //commandNameCalculated = true;
                     commandNameFullyTyped = commandOriginal.Length > endDelimiterIndexOfCommand;
 
                     //提取指令名
                     commandNameLength = endDelimiterIndexOfCommand - i - 1;
                     commandResult = SubstringCommand(commandOriginal, commandNameLength, i + 1);
-                    //}
 
                     //跳过该指令长度，继续循环
                     i = (endDelimiterIndexOfCommand < commandOriginal.Length - 1 && commandOriginal[endDelimiterIndexOfCommand + 1] == ',')
@@ -369,13 +364,9 @@ namespace Yu
                 }
 
                 endDelimiterIndexOfCommand = GMCommandUtils.IndexOfChar(commandOriginal, ' ', i + 1);
-                // if (!commandNameCalculated)
-                // {
-                //commandNameCalculated = true;
                 commandNameFullyTyped = commandOriginal.Length > endDelimiterIndexOfCommand;
                 commandNameLength = commandOriginal[endDelimiterIndexOfCommand - 1] == ',' ? endDelimiterIndexOfCommand - 1 - i : endDelimiterIndexOfCommand - i;
                 commandResult = SubstringCommand(commandOriginal, commandNameLength, i);
-                //}
 
                 i = endDelimiterIndexOfCommand;
                 caretIndexIncrements.Add(i);
@@ -388,7 +379,6 @@ namespace Yu
         /// <summary>
         /// 裁剪有分隔符的指令，提取指令名
         /// </summary>
-        /// <returns></returns>
         private static string SubstringCommand(string commandOriginal, int commandNameLength, int startIndex)
         {
             if (commandNameLength == 0 || commandOriginal.Length != commandNameLength ||

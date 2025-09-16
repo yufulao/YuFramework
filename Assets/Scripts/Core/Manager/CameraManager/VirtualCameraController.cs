@@ -21,10 +21,11 @@ namespace Yu
         private CinemachineBasicMultiChannelPerlin _perlin; //虚拟摄像机的噪声组件
         [Header("移动")] private CinemachineFramingTransposer _transposer; //摄像机的trans组件
         private Coroutine _screenOffsetCoroutine; //当前的shake协程
+        private Coroutine _moveCoroutine; //当前的move协程
+        private float _originalLookaheadTime;//初始对准follower的缓动时长
         private float _originalDeadZoneWidth; //初始死区宽
         private float _originalDeadZoneHeight; //初始死区高
         private float _originalDamping; //初始平滑时间
-        private Transform _cacheFollower; //移动前的摄像机目标
         [Header("摇晃")] public float defaultShakeAmplitude = 0.5f; //默认振幅
         public float defaultShakeFrequency = 10f; //默认频率
         public float idleAmplitude; //相机闲置时噪声的幅度
@@ -84,12 +85,11 @@ namespace Yu
         /// <summary>
         /// 设置confiner
         /// </summary>
-        /// <param name="confiner"></param>
         public void RegisterConfiner(Collider confiner)
         {
             if (!_confiner)
             {
-                Debug.Log(transform.name + "虚拟摄像机没有confiner");
+                GameLog.Info(transform.name + "虚拟摄像机没有confiner");
                 return;
             }
 
@@ -113,38 +113,41 @@ namespace Yu
                 return;
             }
             
-            _screenOffsetCoroutine = StartCoroutine(SetScreenOffsetCoroutine(xOffset, yOffset, duration));
+            _screenOffsetCoroutine = StartCoroutine(SetScreenOffsetCo(xOffset, yOffset, duration));
         }
 
         /// <summary>
-        /// 设置摄像机偏移值的协程
+        /// 瞬时对准follower
         /// </summary>
-        private IEnumerator SetScreenOffsetCoroutine(float xOffset, float yOffset, float duration)
+        public void AimFollower()
         {
-            var elapsedTime = 0f;
-            //逐帧插值移动摄像机
-            while (elapsedTime < duration)
+            var follower = _vCam.Follow;
+            if (!follower)
             {
-                elapsedTime += Time.deltaTime;
-                var curTimePoint = elapsedTime / duration;
-                _transposer.m_ScreenX = Mathf.Lerp(_transposer.m_ScreenX, xOffset, curTimePoint);
-                _transposer.m_ScreenY = Mathf.Lerp(_transposer.m_ScreenY, yOffset, curTimePoint);
-                yield return null;
+                return;
             }
+            
+            _transposer.ForceCameraPosition(follower.position, transform.rotation);
         }
 
         /// <summary>
         /// 死区为0，在指定持续时间内强制锁定摄像机的follow行为，配合RegisterFollower完成摄像机移动
         /// </summary>
-        public void LockFollower(float duration)
+        public void LockFollower(float duration, bool lockDeadZone = true)
         {
             //记录初始值
+            _originalLookaheadTime = _transposer.m_LookaheadTime;
             _originalDeadZoneWidth = _transposer.m_DeadZoneWidth;
             _originalDeadZoneHeight = _transposer.m_DeadZoneHeight;
             _originalDamping = _transposer.m_XDamping;
             //设置Dead Zone和缓动时间
-            _transposer.m_DeadZoneWidth = 0;
-            _transposer.m_DeadZoneHeight = 0;
+            if (lockDeadZone)
+            {
+                _transposer.m_DeadZoneWidth = 0;
+                _transposer.m_DeadZoneHeight = 0;
+            }
+            
+            _transposer.m_LookaheadTime = duration;
             _transposer.m_XDamping = duration;
             _transposer.m_YDamping = duration;
             _transposer.m_ZDamping = duration;
@@ -155,6 +158,7 @@ namespace Yu
         /// </summary>
         public void CancelLockFollower()
         {
+            _transposer.m_LookaheadTime = _originalLookaheadTime;
             _transposer.m_DeadZoneWidth = _originalDeadZoneWidth;
             _transposer.m_DeadZoneHeight = _originalDeadZoneHeight;
             _transposer.m_XDamping = _originalDamping;
@@ -232,6 +236,23 @@ namespace Yu
             if (relative)
             {
                 _targetFieldOfView += _initialFieldOfView;
+            }
+        }
+        
+        /// <summary>
+        /// 设置摄像机偏移值的协程
+        /// </summary>
+        private IEnumerator SetScreenOffsetCo(float xOffset, float yOffset, float duration)
+        {
+            var elapsedTime = 0f;
+            //逐帧插值移动摄像机
+            while (elapsedTime < duration)
+            {
+                elapsedTime += Time.deltaTime;
+                var curTimePoint = elapsedTime / duration;
+                _transposer.m_ScreenX = Mathf.Lerp(_transposer.m_ScreenX, xOffset, curTimePoint);
+                _transposer.m_ScreenY = Mathf.Lerp(_transposer.m_ScreenY, yOffset, curTimePoint);
+                yield return null;
             }
         }
 

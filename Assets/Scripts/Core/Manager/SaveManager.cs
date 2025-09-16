@@ -5,15 +5,13 @@
 //@createTime   2024.05.18 01:29:39
 // ******************************************************************
 
-using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace Yu
 {
     public class SaveManager : BaseSingleTon<SaveManager>, IMonoManager
     {
-        private static readonly Dictionary<string, ES3Settings> SettingDic = new Dictionary<string, ES3Settings>();
+        private static readonly Dictionary<string, ES3Settings> SettingDic = new();
 
         public void OnInit()
         {
@@ -38,13 +36,21 @@ namespace Yu
 
         /// <summary>
         /// 查询是否有该项数据
+        /// <param name="checkFile">是否检查文件名存在</param>
         /// </summary>
-        public static bool ExistKey(string key, string fileName = null) => ES3.KeyExists(key, fileName);
+        public static bool ExistKey(string key, string fileName, bool checkFile = true)
+        {
+            if (checkFile && ExistFile(fileName))
+            {
+                return false;
+            }
+            
+            return ES3.KeyExists(key, fileName);
+        }
 
         /// <summary>
         /// 查询是否有该文件
         /// </summary>
-        /// <returns></returns>
         public static bool ExistFile(string fileName) => ES3.FileExists(fileName);
 
         /// <summary>
@@ -54,7 +60,7 @@ namespace Yu
         {
             if (ExistFile(fileName))
             {
-                Debug.LogError("文件已存在" + fileName);
+                GameLog.Error("文件已存在" + fileName);
                 return;
             }
 
@@ -73,7 +79,7 @@ namespace Yu
         /// 清除指定文件
         /// </summary>
         public static void DeleteFile(string fileName) => ES3.DeleteFile(fileName);
-        
+
         /// <summary>
         /// 复制指定文件
         /// </summary>
@@ -86,43 +92,51 @@ namespace Yu
 
         /// <summary>
         /// 存泛型，指定文件
+        /// <param name="checkFile">是否检查文件名存在</param>
         /// </summary>
-        public static void Set<T>(string key, T t, string fileName)
+        public static void Set<T>(string key, string fileName, T value, bool checkFile = true)
         {
-            if (ExistFile(fileName))
+            if (checkFile && !ExistFile(fileName))
             {
-                ES3.Save(key, t, fileName);
+                GameLog.Error("文件名不存在");
                 return;
             }
-
-            Debug.LogError("文件名不存在");
-        }
-
-        /// <summary>
-        /// 获取泛型，指定文件
-        /// </summary>
-        public static T Get<T>(string key, T defaultValue, string fileName)
-        {
-            if (ExistFile(fileName))
-            {
-                return GetWithoutFileCheck(key, defaultValue, fileName);
-            }
-
-            Debug.LogError($"文件名不存在：{fileName}");
-            return defaultValue;
+            
+            ES3.Save(key, value, fileName);
         }
 
         /// <summary>
         /// 获取泛型，指定文件，不检测文件是否存在
         /// </summary>
-        public static T GetWithoutFileCheck<T>(string key, T defaultValue, string fileName)
+        /// <param name="key">键</param>
+        /// <param name="fileName">文件名</param>
+        /// <param name="defaultValue">默认值</param>
+        /// <param name="checkFile">是否检查文件名存在</param>
+        /// <param name="checkKey">是否检查key</param>
+        /// <param name="autoSetIfNoKey">无key是否自动创建一个key，使用defaultValue作为创建值</param>
+        public static T Get<T>(string key, string fileName, T defaultValue = default, bool checkFile = true, bool checkKey = true, bool autoSetIfNoKey = true)
         {
-            if (ExistKey(key, fileName))
+            if (checkFile && !ExistFile(fileName))
             {
-                return ES3.Load<T>(key, defaultValue, GetES3Settings(fileName));
+                return defaultValue;
             }
 
-            Set(key, defaultValue, fileName);
+            if (!checkKey)
+            {
+                return ES3.Load(key, defaultValue, GetES3Settings(fileName));
+            }
+
+            if (ExistKey(key, fileName, false))
+            {
+                return ES3.Load(key, defaultValue, GetES3Settings(fileName));
+            }
+
+            if (!autoSetIfNoKey)
+            {
+                return defaultValue;
+            }
+
+            ES3.Save(key, defaultValue, fileName);
             return defaultValue;
         }
 
@@ -136,9 +150,9 @@ namespace Yu
                 return ES3Settings.defaultSettings;
             }
 
-            if (SettingDic.ContainsKey(fileName))
+            if (SettingDic.TryGetValue(fileName, out var settings))
             {
-                return SettingDic[fileName];
+                return settings;
             }
 
             var newSetting = new ES3Settings(fileName);

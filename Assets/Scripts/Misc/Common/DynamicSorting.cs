@@ -13,13 +13,12 @@ namespace Yu
 {
     public class DynamicSorting : MonoBehaviour
     {
-        [LabelText("是否是静态物体")]public bool isStatic=true;
-        [LabelText("Z轴值偏移量")]public float offset;
-        [Title("调试")]
-        [LabelText("是否保持常亮")]public bool debugLineAlwaysActive=false;
-        [LabelText("辅助线颜色")]public Color debugLineColor=Color.red;
-        [LabelText("辅助线长度")]public float debugLineLength=1f;
-        [LabelText("辅助线横向偏移度")]public float debugLineXOffset=0f;
+        [LabelText("是否是静态物体")] public bool isStatic = true;
+        [LabelText("Z轴值偏移量")] public float offset;
+        [Title("调试")] [LabelText("是否保持常亮")] public bool debugLineAlwaysActive = false;
+        [LabelText("辅助线颜色")] public Color debugLineColor = Color.red;
+        [LabelText("辅助线长度")] public float debugLineLength = 1f;
+        [LabelText("辅助线横向偏移度")] public float debugLineXOffset = 0f;
         private Vector3 _cachePosition; //用来判断位置是否变化，优化性能
 
 
@@ -59,7 +58,7 @@ namespace Yu
             {
                 return;
             }
-            
+
             DrawDebugLine();
         }
 
@@ -86,16 +85,18 @@ namespace Yu
             var sp = GetComponent<SpriteRenderer>();
             if (sp)
             {
-                sp.sortingLayerName="SceneObject";
+                sp.sortingLayerName = "SceneObject";
                 sp.sortingOrder = 0;
             }
 
             var sortingGroup = GetComponent<SortingGroup>();
-            if (sortingGroup)
+            if (!sortingGroup)
             {
-                sortingGroup.sortingLayerName="SceneObject";
-                sortingGroup.sortingOrder = 0;
+                return;
             }
+
+            sortingGroup.sortingLayerName = "SceneObject";
+            sortingGroup.sortingOrder = 0;
         }
 
         /// <summary>
@@ -106,8 +107,8 @@ namespace Yu
             //选择Gizmos的颜色
             Gizmos.color = debugLineColor;
             var position = transform.position;
-            var startPoint = new Vector3(position.x - debugLineLength/2+debugLineXOffset, position.y + offset, position.z);
-            var endPoint = new Vector3(position.x + debugLineLength/2+debugLineXOffset, position.y + offset, position.z);
+            var startPoint = new Vector3(position.x - debugLineLength / 2 + debugLineXOffset, position.y + offset, position.z);
+            var endPoint = new Vector3(position.x + debugLineLength / 2 + debugLineXOffset, position.y + offset, position.z);
             //绘制横线
             Gizmos.DrawLine(startPoint, endPoint);
         }

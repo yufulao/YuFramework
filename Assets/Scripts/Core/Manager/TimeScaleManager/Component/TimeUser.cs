@@ -16,25 +16,23 @@ namespace Yu
     {
         public string timeHolderKey;
         //component
-        private readonly List<IComponentTimeUser> _components = new List<IComponentTimeUser>();
-        private AnimationTimeUser _animation;
-        private AnimatorTimeUser _animator;
-        private readonly List<AudioSourceTimeUser> _audioSources = new List<AudioSourceTimeUser>();
-        private NavMeshAgentTimeUser _navMeshAgent;
-        private ParticleSystemTimeUser _particleSystem;
-        private RigidbodyTimeUser3D _rigidbody;
-        private RigidbodyTimeUser2D _rigidbody2D;
-        private TransformTimeUser _transform;
+        private readonly List<IComponentTimeUser> _components = new();
+        [HideInInspector] public AnimationTimeUser Animation;
+        [HideInInspector] public AnimatorTimeUser Animator;
+        [HideInInspector] public readonly List<AudioSourceTimeUser> AudioSources = new();
+        [HideInInspector] public NavMeshAgentTimeUser NavMeshAgent;
+        [HideInInspector] public ParticleSystemTimeUser ParticleSystem;
+        [HideInInspector] public RigidbodyTimeUser3D Rigidbody;
+        [HideInInspector] public RigidbodyTimeUser2D Rigidbody2D;
+        [HideInInspector] public TransformTimeUser Transform;
 
         //time
         [HideInInspector] public float timeScale = 1;
         [HideInInspector] public float lastTimeScale = 1;
         [HideInInspector] public float deltaTime;
         [HideInInspector] public float fixedDeltaTime;
-        public float SmoothDeltaTime => (deltaTime + _previousDeltaTimes.Sum()) / (_previousDeltaTimes.Count + 1);
         private float _time; //自创建此时间线以来的时间（以秒为单位）
         private float _unscaledTime; //自创建此时间线以来的未缩放时间（以秒为单位）
-        private readonly Queue<float> _previousDeltaTimes = new Queue<float>();
         private TimeHolder _timeHolder;
 
 
@@ -100,7 +98,6 @@ namespace Yu
             }
 
             timeScale = lastTimeScale = 1;
-            _previousDeltaTimes.Clear();
         }
 
         /// <summary>
@@ -135,7 +132,6 @@ namespace Yu
         /// <summary>
         /// 查找TimeHolder
         /// </summary>
-        /// <returns></returns>
         private TimeHolder FindTimeHolder()
         {
             var oldTimeHolder = _timeHolder;
@@ -151,7 +147,7 @@ namespace Yu
                 return timeHolder;
             }
 
-            Debug.LogError("没有timeHolder:" + timeHolderKey);
+            GameLog.Error("没有timeHolder:" + timeHolderKey);
             return null;
         }
 
@@ -163,17 +159,17 @@ namespace Yu
         private void SetAnimator()
         {
             var animatorComponent = GetComponent<Animator>();
-            if (_animator == null && animatorComponent)
+            if (Animator == null && animatorComponent)
             {
-                _animator = new AnimatorTimeUser(this, animatorComponent);
-                _animator.Initialize();
-                _components.Add(_animator);
+                Animator = new AnimatorTimeUser(this, animatorComponent);
+                Animator.Initialize();
+                _components.Add(Animator);
                 return;
             }
 
-            if (_animator != null && animatorComponent == null)
+            if (Animator != null && animatorComponent == null)
             {
-                _animator = null;
+                Animator = null;
             }
         }
 
@@ -183,17 +179,17 @@ namespace Yu
         private void SetAnimation()
         {
             var animationComponent = GetComponent<Animation>();
-            if (_animation == null && animationComponent)
+            if (Animation == null && animationComponent)
             {
-                _animation = new AnimationTimeUser(this, animationComponent);
-                _animation.Initialize();
-                _components.Add(_animation);
+                Animation = new AnimationTimeUser(this, animationComponent);
+                Animation.Initialize();
+                _components.Add(Animation);
                 return;
             }
 
-            if (_animation != null && !animationComponent)
+            if (Animation != null && !animationComponent)
             {
-                _animation = null;
+                Animation = null;
             }
         }
 
@@ -215,9 +211,9 @@ namespace Yu
         /// </summary>
         private void DeleteAbsentAudioSource(AudioSource[] audioSourceComponentArray)
         {
-            for (var i = 0; i < _audioSources.Count; i++)
+            for (var i = 0; i < AudioSources.Count; i++)
             {
-                var audioSourceTemp = _audioSources[i];
+                var audioSourceTemp = AudioSources[i];
                 var audioSourceComponentExists = false;
                 foreach (var audioSourceComponent in audioSourceComponentArray)
                 {
@@ -235,7 +231,7 @@ namespace Yu
                     continue;
                 }
 
-                _audioSources.Remove(audioSourceTemp);
+                AudioSources.Remove(audioSourceTemp);
             }
         }
 
@@ -247,7 +243,7 @@ namespace Yu
             foreach (var audioSourceComponent in audioSourceComponentList)
             {
                 var audioSourceExists = false;
-                foreach (var audioSourceTimeUser in _audioSources)
+                foreach (var audioSourceTimeUser in AudioSources)
                 {
                     if (audioSourceTimeUser.Component != audioSourceComponent)
                     {
@@ -265,7 +261,7 @@ namespace Yu
 
                 var newAudioSource = new AudioSourceTimeUser(this, audioSourceComponent);
                 newAudioSource.Initialize();
-                _audioSources.Add(newAudioSource);
+                AudioSources.Add(newAudioSource);
                 _components.Add(newAudioSource);
             }
         }
@@ -276,17 +272,17 @@ namespace Yu
         private void SetNavMeshAgent()
         {
             var navMeshAgentComponent = GetComponent<UnityEngine.AI.NavMeshAgent>();
-            if (_navMeshAgent == null && navMeshAgentComponent)
+            if (NavMeshAgent == null && navMeshAgentComponent)
             {
-                _navMeshAgent = new NavMeshAgentTimeUser(this, navMeshAgentComponent);
-                _navMeshAgent.Initialize();
-                _components.Add(_navMeshAgent);
+                NavMeshAgent = new NavMeshAgentTimeUser(this, navMeshAgentComponent);
+                NavMeshAgent.Initialize();
+                _components.Add(NavMeshAgent);
                 return;
             }
 
-            if (_animation != null && !navMeshAgentComponent)
+            if (Animation != null && !navMeshAgentComponent)
             {
-                _navMeshAgent = null;
+                NavMeshAgent = null;
             }
         }
 
@@ -296,17 +292,17 @@ namespace Yu
         private void SetParticleSystem()
         {
             var particleSystemComponent = GetComponent<ParticleSystem>();
-            if (_particleSystem == null && particleSystemComponent)
+            if (ParticleSystem == null && particleSystemComponent)
             {
-                _particleSystem = new ParticleSystemTimeUser(this, particleSystemComponent);
-                _particleSystem.Initialize();
-                _components.Add(_particleSystem);
+                ParticleSystem = new ParticleSystemTimeUser(this, particleSystemComponent);
+                ParticleSystem.Initialize();
+                _components.Add(ParticleSystem);
                 return;
             }
 
-            if (_particleSystem != null && !particleSystemComponent)
+            if (ParticleSystem != null && !particleSystemComponent)
             {
-                _particleSystem = null;
+                ParticleSystem = null;
             }
         }
 
@@ -317,26 +313,26 @@ namespace Yu
         {
             var rigidbodyComponent = GetComponent<Rigidbody>();
             var rigidbody2DComponent = GetComponent<Rigidbody2D>();
-            if (_rigidbody == null && rigidbodyComponent)
+            if (Rigidbody == null && rigidbodyComponent)
             {
-                _rigidbody = new RigidbodyTimeUser3D(this, rigidbodyComponent);
-                _rigidbody.Initialize();
-                _components.Add(_rigidbody);
-                _rigidbody2D = null;
-                _transform = null;
+                Rigidbody = new RigidbodyTimeUser3D(this, rigidbodyComponent);
+                Rigidbody.Initialize();
+                _components.Add(Rigidbody);
+                Rigidbody2D = null;
+                Transform = null;
                 return;
             }
 
-            if (_rigidbody2D != null || !rigidbody2DComponent)
+            if (Rigidbody2D != null || !rigidbody2DComponent)
             {
                 return;
             }
 
-            _rigidbody2D = new RigidbodyTimeUser2D(this, rigidbody2DComponent);
-            _rigidbody2D.Initialize();
-            _components.Add(_rigidbody2D);
-            _rigidbody = null;
-            _transform = null;
+            Rigidbody2D = new RigidbodyTimeUser2D(this, rigidbody2DComponent);
+            Rigidbody2D.Initialize();
+            _components.Add(Rigidbody2D);
+            Rigidbody = null;
+            Transform = null;
         }
 
         /// <summary>
@@ -345,16 +341,16 @@ namespace Yu
         private void SetTransform()
         {
             var transformComponent = GetComponent<Transform>();
-            if (_transform != null)
+            if (Transform != null)
             {
                 return;
             }
 
-            _transform = new TransformTimeUser(this, transformComponent);
-            _transform.Initialize();
-            _components.Add(_transform);
-            _rigidbody = null;
-            _rigidbody2D = null;
+            Transform = new TransformTimeUser(this, transformComponent);
+            Transform.Initialize();
+            _components.Add(Transform);
+            Rigidbody = null;
+            Rigidbody2D = null;
         }
 
         #endregion

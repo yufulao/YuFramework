@@ -10,10 +10,10 @@ using UnityEngine;
 
 namespace Yu
 {
-    public class TimeScaleManager : MonoSingleton<TimeScaleManager>//待做：脱离mono
+    public class TimeScaleManager : MonoSingleton<TimeScaleManager>//todo 待做：脱离mono
     {
-        private readonly Dictionary<string, TimeHolder> _timeHolderList = new Dictionary<string, TimeHolder>();
-        public IEnumerable<TimeHolder> TimeHolders => _timeHolderList.Values;
+        private readonly Dictionary<string, TimeHolder> _timeHolderList = new();
+        public IEnumerable<TimeHolder> TimeHolderList => _timeHolderList.Values;
         
 
         protected override void Awake()
@@ -21,7 +21,7 @@ namespace Yu
             base.Awake();
             foreach (var globalTimeHolder in GetComponents<TimeHolder>())
             {
-                //Debug.Log(globalTimeHolder.key);
+                //GameLog.Info(globalTimeHolder.key);
                 _timeHolderList.Add(globalTimeHolder.key, globalTimeHolder);
             }
         }
@@ -33,7 +33,7 @@ namespace Yu
         {
             if (HasTimeHolder(key))
             {
-                Debug.LogError("TimeHolder重复添加" + key);
+                GameLog.Error("TimeHolder重复添加" + key);
                 return;
             }
             
@@ -47,7 +47,7 @@ namespace Yu
         {
             if (!HasTimeHolder(key))
             {
-                Debug.LogError("没有这个TimeHolder" + key);
+                GameLog.Error("没有这个TimeHolder" + key);
                 return;
             }
 
@@ -57,8 +57,6 @@ namespace Yu
         /// <summary>
         /// 获取当前的时间流逝状态
         /// </summary>
-        /// <param name="timeScale"></param>
-        /// <returns></returns>
         public static TimeState GetTimeState(float timeScale)
         {
             switch (timeScale)
@@ -96,10 +94,10 @@ namespace Yu
         /// </summary>
         private bool HasTimeHolder(string key)
         {
-            // Debug.Log("find+"+key);
+            // GameLog.Info("find+"+key);
             // foreach (var timeHolder in _timeHolderList)
             // {
-            //     Debug.Log(timeHolder.Value.key);
+            //     GameLog.Info(timeHolder.Value.key);
             // }
             return !string.IsNullOrEmpty(key) && _timeHolderList.ContainsKey(key);
         }

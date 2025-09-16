@@ -1,10 +1,7 @@
 ﻿using System;
-using FancyScrollView;
-using System.Collections.Generic;
-using UnityEngine;
 using Yu;
 
-public class GMGridView :GridView<GMMethodData, GMGridContext, GMGridGroup>
+public class GMGridView :BtnGridView<GMMethodData, GMGridContext, GMGridGroup>
 {
     public override void OnItemClicked(Action<int> callback)
     {

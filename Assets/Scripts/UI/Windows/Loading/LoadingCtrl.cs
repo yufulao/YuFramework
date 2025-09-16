@@ -5,6 +5,7 @@
 //@createTime   2024.05.18 01:35:35
 // ******************************************************************
 
+using System.Collections;
 using Yu;
 
 public class LoadingCtrl : UICtrlBase
@@ -21,12 +22,12 @@ public class LoadingCtrl : UICtrlBase
 
     public override void OpenRoot(params object[] param)
     {
-        _view.OpenWindow();
+        _view.OpenRoot();
     }
 
     public override void CloseRoot()
     {
-        _view.CloseWindow();
+        _view.CloseRoot();
     }
 
     public override void OnClear()
@@ -36,4 +37,14 @@ public class LoadingCtrl : UICtrlBase
     public override void BindEvent()
     {
     }
+
+    /// <summary>
+    /// 手动播放Open动画，带动画时长
+    /// </summary>
+    public IEnumerator OpenRootCo() => _view.OpenRootCo();
+    
+    /// <summary>
+    /// 手动播放Close动画，带动画时长
+    /// </summary>
+    public IEnumerator CloseRootCo() => _view.CloseRootCo();
 }

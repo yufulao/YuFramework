@@ -13,8 +13,9 @@ namespace Yu
     {
         public Vector2 CurrentMovement; //当前的移动输入值
         public bool MovementPressed => CurrentMovement.x != 0 || CurrentMovement.y != 0; //移动是否大于0，无法判断是否摁下摁键，因为a和d一起摁，也是false
+        public bool DisableShortcut;
         
-        private readonly InputActions _inputActions = new InputActions();
+        private readonly InputActions _inputActions = new();
 
         public void OnInit()
         {
@@ -25,8 +26,8 @@ namespace Yu
             _inputActions.UI.Hold.performed += OnHoldBegin;
             _inputActions.UI.Hold.canceled += OnHoldEnd;
             _inputActions.PlayerControl.Movement.performed += outputAction => CurrentMovement = outputAction.ReadValue<Vector2>();
-            
-            _inputActions.GM.Open.started += OnGMOpen;
+            _inputActions.UI.GM.started += OnGmKeyDown;
+            _inputActions.UI.InspirationCatalog.started += OnInspirationKeyDown;
         }
 
         public void Update()
@@ -57,7 +58,7 @@ namespace Yu
         public Vector3 GetMousePosition()
         {
             //因为Mouse.current.position.value是ref类型修饰的（什么玩意），lua中不能用，虽然可以强转vec3，但是lua也没有强转
-            return Mouse.current == null ? Vector3.zero : (Vector3)Mouse.current.position.value;
+            return Mouse.current == null ? Vector3.zero : Mouse.current.position.value;
         }
 
         /// <summary>
@@ -66,22 +67,34 @@ namespace Yu
         /// <returns></returns>
         public Vector3 GetTouchPosition()
         {
-            return Touchscreen.current == null ? Vector3.zero : (Vector3)Touchscreen.current.position.value;
+            return Touchscreen.current == null ? Vector3.zero : Touchscreen.current.position.value;
         }
 
         /// <summary>
         /// GMView调试界面打开
         /// </summary>
-        /// <param name="obj"></param>
-        private void OnGMOpen(InputAction.CallbackContext obj)
+        private void OnGmKeyDown(InputAction.CallbackContext callbackContext)
         {
-            EventManager.Instance.Dispatch(EventName.OnGmOpen);
+            if(DisableShortcut)
+            {
+                return;
+            }
+            
+            EventManager.Instance.Dispatch(EventName.OnGmKeyDown);
+        }
+
+        /// <summary>
+        /// 灵感图鉴按键按下时
+        /// </summary>
+        private void OnInspirationKeyDown(InputAction.CallbackContext callbackContext)
+        {
+            if(DisableShortcut) return;
+            EventManager.Instance.Dispatch(EventName.OnInspirationCatalogKeyDown);
         }
 
         /// <summary>
         /// 鼠标左键点击
         /// </summary>
-        /// <param name="callbackContext"></param>
         private static void OnMouseLeftClick(InputAction.CallbackContext callbackContext)
         {
             EventManager.Instance.Dispatch(EventName.OnMouseLeftClick);
@@ -90,7 +103,6 @@ namespace Yu
         /// <summary>
         /// 鼠标左键点击
         /// </summary>
-        /// <param name="callbackContext"></param>
         private static void OnMouseRightClick(InputAction.CallbackContext callbackContext)
         {
             EventManager.Instance.Dispatch(EventName.OnMouseRightClick);
@@ -99,7 +111,6 @@ namespace Yu
         /// <summary>
         /// 鼠标左键长按开始
         /// </summary>
-        /// <param name="callbackContext"></param>
         private static void OnHoldBegin(InputAction.CallbackContext callbackContext)
         {
             EventManager.Instance.Dispatch(EventName.OnHoldBegin);
@@ -108,7 +119,6 @@ namespace Yu
         /// <summary>
         /// 鼠标左键长按结束
         /// </summary>
-        /// <param name="callbackContext"></param>
         private static void OnHoldEnd(InputAction.CallbackContext callbackContext)
         {
             EventManager.Instance.Dispatch(EventName.OnHoldEnd);
@@ -119,19 +129,19 @@ namespace Yu
         // {
         //     if (Keyboard.current.spaceKey.wasPressedThisFrame)
         //     {
-        //         Debug.Log("空格键按下");
+        //         GameLog.Info("空格键按下");
         //     }
         //     if(Keyboard.current.aKey.wasReleasedThisFrame)
         //     {
-        //         Debug.Log("A键抬起");
+        //         GameLog.Info("A键抬起");
         //     }
         //     if(Keyboard.current.spaceKey.isPressed)
         //     {
-        //         Debug.Log("空格按下");
+        //         GameLog.Info("空格按下");
         //     }
         //     if(Keyboard.current.anyKey.wasPressedThisFrame)
         //     {
-        //         Debug.Log("任意键按下");
+        //         GameLog.Info("任意键按下");
         //     }
         // }
 
@@ -140,32 +150,32 @@ namespace Yu
         // void Update {
         //     if(Mouse.current.rightButton.wasPressedThisFrame)
         // {
-        //     Debug.Log("鼠标右键按下");
+        //     GameLog.Info("鼠标右键按下");
         // }
         //
         // if(Mouse.current.middleButton.wasPressedThisFrame)
         // {
-        //     Debug.Log("鼠标中建按下");
+        //     GameLog.Info("鼠标中建按下");
         // }
         //
         // if(Mouse.current.forwardButton.wasPressedThisFrame)
         // {
-        //     Debug.Log("鼠标前键按下");
+        //     GameLog.Info("鼠标前键按下");
         // }
         //
         // if(Mouse.current.backButton.wasPressedThisFrame)
         // {
-        //     Debug.Log("鼠标后键按下");
+        //     GameLog.Info("鼠标后键按下");
         // }
         //
         // //获取鼠标屏幕坐标(左下角为（0,0)
-        // Debug.Log(Mouse.current.position.ReadValue());
+        // GameLog.Info(Mouse.current.position.ReadValue());
         //
         // //两帧之间的偏移
-        // Debug.Log(Mouse.current.delta.ReadValue());
+        // GameLog.Info(Mouse.current.delta.ReadValue());
         //
         // //获取鼠标滚轮坐标
-        // Debug.Log(Mouse.current.scroll.ReadValue());
+        // GameLog.Info(Mouse.current.scroll.ReadValue());
 
 
         //触摸屏
@@ -180,17 +190,17 @@ namespace Yu
         //     TouchControl tc = ts.touches[0];
         //     if (tc.press.wasPressedThisFrame)
         //     {
-        //         Debug.Log("按下");
+        //         GameLog.Info("按下");
         //     }
         //
         //     if (tc.press.wasReleasedThisFrame)
         //     {
-        //         Debug.Log("抬起");
+        //         GameLog.Info("抬起");
         //     }
         //
         //     if (tc.press.isPressed)
         //     {
-        //         Debug.Log("按住");
+        //         GameLog.Info("按住");
         //     }
         //
         //     if (tc.tap.isPressed)
@@ -198,17 +208,17 @@ namespace Yu
         //     }
         //
         //     //点击次数 
-        //     Debug.Log(tc.tapCount);
+        //     GameLog.Info(tc.tapCount);
         //     //点击位置
-        //     Debug.Log(tc.position.ReadValue());
+        //     GameLog.Info(tc.position.ReadValue());
         //     //第一次接触位置
-        //     Debug.Log(tc.startPosition.ReadValue());
+        //     GameLog.Info(tc.startPosition.ReadValue());
         //     //得到的范围
-        //     Debug.Log(tc.radius.ReadValue());
+        //     GameLog.Info(tc.radius.ReadValue());
         //     //偏移位置
-        //     Debug.Log(tc.delta.ReadValue());
+        //     GameLog.Info(tc.delta.ReadValue());
         //     //返回TouchPhase: None,Began,Moved,Ended,Canceled,Stationary
-        //     Debug.Log(tc.phase.ReadValue());
+        //     GameLog.Info(tc.phase.ReadValue());
         //
         //     //判断状态
         //     UnityEngine.InputSystem.TouchPhase tp = tc.phase.ReadValue();

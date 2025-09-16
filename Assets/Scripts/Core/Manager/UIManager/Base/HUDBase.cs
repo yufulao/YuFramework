@@ -9,31 +9,26 @@ using UnityEngine;
 
 namespace Yu
 {
-    public class HUDBase : MonoBehaviour
+    public abstract class HUDBase : MonoBehaviour
     {
-        protected bool IsActive => gameObject.activeInHierarchy;
-        
-        
         /// <summary>
         /// 初始化
         /// </summary>
-        public virtual void OnInit()
-        {
-        }
+        public abstract void OnInit();
 
         /// <summary>
         /// 绑定事件
         /// </summary>
-        public virtual void BindEvent()
-        {
-
-        }
+        public abstract void BindEvent();
 
         /// <summary>
         /// 关闭HUD
         /// </summary>
-        public virtual void CloseRoot()
-        {
-        }
+        public abstract void CloseRoot();
+
+        /// <summary>
+        /// 销毁HUD时
+        /// </summary>
+        public abstract void OnDestroy();
     }
 }

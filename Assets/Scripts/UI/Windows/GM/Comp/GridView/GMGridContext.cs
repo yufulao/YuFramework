@@ -1,6 +1,6 @@
 ﻿using System;
 
-public class GMGridContext : GridContext
+public class GMGridContext : BtnGridContext
 {
     public Action<GMGridData> OnBtnClickExecute;
 }

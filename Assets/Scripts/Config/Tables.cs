@@ -12,38 +12,62 @@ using Luban;
 
 public partial class Tables
 {
-    public CfgCamera CfgCamera {get; }
-    public CfgPrefab CfgPrefab {get; }
-    public CfgSprite CfgSprite {get; }
-    public CfgUI CfgUI {get; }
-    public CfgHUD CfgHUD {get; }
     public CfgBGM CfgBGM {get; }
     public CfgSFX CfgSFX {get; }
+    public CfgCamera CfgCamera {get; }
+    public CfgPrefab CfgPrefab {get; }
+    public CfgUI CfgUI {get; }
+    public CfgHUD CfgHUD {get; }
     public CfgScene CfgScene {get; }
+    public CfgGlobal CfgGlobal {get; }
+    public CfgFont CfgFont {get; }
+    public CfgLocalization CfgLocalization {get; }
+    public CfgLocalizationImage CfgLocalizationImage {get; }
+    public CfgSprite CfgSprite {get; }
+    public CfgAction CfgAction {get; }
+    public CfgCondition CfgCondition {get; }
+    public CfgDialogue CfgDialogue {get; }
+    public CfgDialogueOption CfgDialogueOption {get; }
 
     public Tables(System.Func<string, ByteBuf> loader)
     {
-        CfgCamera = new CfgCamera(loader("cfgcamera"));
-        CfgPrefab = new CfgPrefab(loader("cfgprefab"));
-        CfgSprite = new CfgSprite(loader("cfgsprite"));
-        CfgUI = new CfgUI(loader("cfgui"));
-        CfgHUD = new CfgHUD(loader("cfghud"));
         CfgBGM = new CfgBGM(loader("cfgbgm"));
         CfgSFX = new CfgSFX(loader("cfgsfx"));
+        CfgCamera = new CfgCamera(loader("cfgcamera"));
+        CfgPrefab = new CfgPrefab(loader("cfgprefab"));
+        CfgUI = new CfgUI(loader("cfgui"));
+        CfgHUD = new CfgHUD(loader("cfghud"));
         CfgScene = new CfgScene(loader("cfgscene"));
+        CfgGlobal = new CfgGlobal(loader("cfgglobal"));
+        CfgFont = new CfgFont(loader("cfgfont"));
+        CfgLocalization = new CfgLocalization(loader("cfglocalization"));
+        CfgLocalizationImage = new CfgLocalizationImage(loader("cfglocalizationimage"));
+        CfgSprite = new CfgSprite(loader("cfgsprite"));
+        CfgAction = new CfgAction(loader("cfgaction"));
+        CfgCondition = new CfgCondition(loader("cfgcondition"));
+        CfgDialogue = new CfgDialogue(loader("cfgdialogue"));
+        CfgDialogueOption = new CfgDialogueOption(loader("cfgdialogueoption"));
         ResolveRef();
     }
     
     private void ResolveRef()
     {
-        CfgCamera.ResolveRef(this);
-        CfgPrefab.ResolveRef(this);
-        CfgSprite.ResolveRef(this);
-        CfgUI.ResolveRef(this);
-        CfgHUD.ResolveRef(this);
         CfgBGM.ResolveRef(this);
         CfgSFX.ResolveRef(this);
+        CfgCamera.ResolveRef(this);
+        CfgPrefab.ResolveRef(this);
+        CfgUI.ResolveRef(this);
+        CfgHUD.ResolveRef(this);
         CfgScene.ResolveRef(this);
+        CfgGlobal.ResolveRef(this);
+        CfgFont.ResolveRef(this);
+        CfgLocalization.ResolveRef(this);
+        CfgLocalizationImage.ResolveRef(this);
+        CfgSprite.ResolveRef(this);
+        CfgAction.ResolveRef(this);
+        CfgCondition.ResolveRef(this);
+        CfgDialogue.ResolveRef(this);
+        CfgDialogueOption.ResolveRef(this);
     }
 }
 

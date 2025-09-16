@@ -6,17 +6,17 @@ namespace Yu
     {
         public void OnEnter(HfsmSample owner, params object[] objs)
         {
-            Debug.Log("OnEnter2c1");
+            GameLog.Info("OnEnter2c1");
         }
 
         public void OnUpdate(HfsmSample owner, params object[] objs)
         {
-            Debug.Log("OnUpdate2c1");
+            GameLog.Info("OnUpdate2c1");
         }
 
         public void OnExit(HfsmSample owner)
         {
-            Debug.Log("OnExit2c1");
+            GameLog.Info("OnExit2c1");
         }
     }
 }

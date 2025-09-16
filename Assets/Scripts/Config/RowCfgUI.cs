@@ -16,6 +16,7 @@ public sealed partial class RowCfgUI : Luban.BeanBase
     public RowCfgUI(ByteBuf _buf) 
     {
         Id = _buf.ReadString();
+        Idx = _buf.ReadString();
         UiPath = _buf.ReadString();
         Layer = _buf.ReadString();
         SortOrder = _buf.ReadInt();
@@ -31,11 +32,15 @@ public sealed partial class RowCfgUI : Luban.BeanBase
     /// </summary>
     public readonly string Id;
     /// <summary>
+    /// 索引名
+    /// </summary>
+    public readonly string Idx;
+    /// <summary>
     /// 资源路径
     /// </summary>
     public readonly string UiPath;
     /// <summary>
-    /// 所属层级
+    /// 所属层级(NormalLayer在加载存档和返回场景时全部关闭，TopLayer不关闭)
     /// </summary>
     public readonly string Layer;
     /// <summary>
@@ -52,12 +57,14 @@ public sealed partial class RowCfgUI : Luban.BeanBase
         
         
         
+        
     }
 
     public override string ToString()
     {
         return "{ "
         + "id:" + Id + ","
+        + "idx:" + Idx + ","
         + "uiPath:" + UiPath + ","
         + "layer:" + Layer + ","
         + "sortOrder:" + SortOrder + ","

@@ -5,11 +5,9 @@
 //@createTime   2024.05.18 01:31:09
 // ******************************************************************
 
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Object = UnityEngine.Object;
-using XLua;
 
 namespace Yu
 {
@@ -20,13 +18,11 @@ namespace Yu
         private Dictionary<string, Transform> _layers;
         private Dictionary<string, UICtrlBase> _allViews;
         private Dictionary<string, Stack<UICtrlBase>> _layerStacks;
-        private readonly List<UICtrlBase> _cachePopViewCtrl = new List<UICtrlBase>(); //CloseWindowOnly使用的缓存
-        private LuaTable _uiManager;
+        private readonly List<UICtrlBase> _cachePopViewCtrl = new(); //CloseWindowOnly使用的缓存
 
 
         public void OnInit()
         {
-            _uiManager = LuaManager.Instance.LuaEnv.Global.Get<LuaTable>("UIManager");
             _cfgUI = ConfigManager.Tables.CfgUI;
             _uiRoot = GameObject.Find("UIRoot").transform;
             _layers = new Dictionary<string, Transform>
@@ -71,30 +67,6 @@ namespace Yu
         {
             return _uiRoot;
         }
-        
-        /// <summary>
-        /// 打开页面
-        /// </summary>
-        public void OpenWindowByLua(string windowName)
-        {
-            //暂定所有界面只能打开一次
-            if (CheckViewActiveInHierarchy(windowName))
-            {
-                return;
-            }
-
-            var funcOpenWindow = _uiManager.Get<Action<LuaTable, string>>("OpenWindow");
-            funcOpenWindow?.Invoke(_uiManager, windowName);
-        }
-        
-        /// <summary>
-        /// 关闭lua界面
-        /// </summary>
-        public void CloseWindowByLua(string windowName)
-        {
-            var funcCloseWindow = _uiManager.Get<Action<LuaTable, string>>("CloseWindow");
-            funcCloseWindow?.Invoke(_uiManager, windowName);
-        }
 
         /// <summary>
         /// 打开页面
@@ -102,7 +74,7 @@ namespace Yu
         public void OpenWindow(string windowName, params object[] param)
         {
             //暂定所有界面只能打开一次
-            if (CheckViewActiveInHierarchy(windowName))
+            if (IsWindowActive(windowName))
             {
                 return;
             }
@@ -118,7 +90,7 @@ namespace Yu
         public void OpenWindowWithoutStack(string windowName, params object[] param)
         {
             //暂定所有界面只能打开一次
-            if (CheckViewActiveInHierarchy(windowName))
+            if (IsWindowActive(windowName))
             {
                 return;
             }
@@ -139,7 +111,7 @@ namespace Yu
                 var ctrlBefore = _layerStacks[layer].Pop();
                 if (!ctrlBefore)
                 {
-                    Debug.LogWarning("弹出了空界面");
+                    GameLog.Warn("弹出了空界面");
                     continue;
                 }
 
@@ -167,7 +139,7 @@ namespace Yu
                 var ctrlBefore = _layerStacks[layer].Pop();
                 if (!ctrlBefore)
                 {
-                    Debug.LogWarning("弹出了空界面");
+                    GameLog.Warn("弹出了空界面");
                     continue;
                 }
 
@@ -204,7 +176,8 @@ namespace Yu
             var windowsStack = _layerStacks[layerName];
             while (windowsStack.Count != 0)
             {
-                windowsStack.Pop().CloseRoot();
+                var ctrl =  windowsStack.Pop();
+                ctrl.CloseRoot();
             }
         }
 
@@ -226,8 +199,7 @@ namespace Yu
                 {
                     break;
                 }
-
-                ctrlBefore.CloseRoot();
+                
                 ctrlBefore.OnClear();
             }
 
@@ -283,7 +255,7 @@ namespace Yu
         /// <summary>
         /// 检测页面是否在打开状态
         /// </summary>
-        public bool CheckViewActiveInHierarchy(string windowName)
+        public bool IsWindowActive(string windowName)
         {
             if (!_allViews.TryGetValue(windowName, out var view))
             {
@@ -294,31 +266,34 @@ namespace Yu
         }
         
         /// <summary>
-        /// 初始化HUD
+        /// 界面开启时关闭界面，关闭时开启界面
         /// </summary>
-        private void InitHUD()
+        public bool SwitchWindowActive(string windowName)
         {
-            var hudCfg = ConfigManager.Tables.CfgUI["HUD"];
-            var hudRoot = Object.Instantiate(AssetManager.Instance.LoadAssetGameObject(hudCfg.UiPath), _uiRoot);
-            var canvas = hudRoot.GetComponent<Canvas>();
-            canvas.sortingOrder = hudCfg.SortOrder;
-            HUDManager.Instance.Init(hudRoot.transform);
+            if (IsWindowActive(windowName))
+            {
+                CloseWindow(windowName);
+                return false;
+            }
+            
+            OpenWindow(windowName);
+            return true;
         }
-
+        
         /// <summary>
         /// 创建一个新的ui
         /// </summary>
-        private T CreatNewView<T>(string windowName, params object[] param) where T : UICtrlBase
+        public T CreatNewView<T>(string windowName, params object[] param) where T : UICtrlBase
         {
             var rowCfgUi = _cfgUI[windowName];
-            var rootObj = Object.Instantiate(AssetManager.Instance.LoadAsset<GameObject>(rowCfgUi.UiPath), _layers[rowCfgUi.Layer]);
+            var rootObj = Object.Instantiate(AssetManager.LoadAsset<GameObject>(rowCfgUi.UiPath), _layers[rowCfgUi.Layer]);
             rootObj.SetActive(false);
             var canvas = rootObj.GetComponent<Canvas>();
             canvas.sortingOrder = rowCfgUi.SortOrder;
             var ctrlNew = rootObj.GetComponent<T>();;
             if (!ctrlNew)
             {
-                Debug.LogError("找不到viewObj挂载的ctrl" + rootObj.name);
+                GameLog.Error("找不到viewObj挂载的ctrl" + rootObj.name);
                 return null;
             }
 
@@ -326,6 +301,18 @@ namespace Yu
             ctrlNew.OnInit(param);
             ctrlNew.BindEvent();
             return ctrlNew;
+        }
+        
+        /// <summary>
+        /// 初始化HUD
+        /// </summary>
+        private void InitHUD()
+        {
+            var hudCfg = ConfigManager.Tables.CfgUI["HUD"];
+            var hudRoot = Object.Instantiate(AssetManager.LoadAssetGameObject(hudCfg.UiPath), _uiRoot);
+            var canvas = hudRoot.GetComponent<Canvas>();
+            canvas.sortingOrder = hudCfg.SortOrder;
+            HUDManager.Instance.Init(hudRoot.transform);
         }
     }
 }

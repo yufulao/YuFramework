@@ -12,8 +12,8 @@ namespace Yu
 {
     public class TimeHolder : MonoBehaviour
     {
-        private readonly HashSet<TimeHolder> _timeHolderList = new HashSet<TimeHolder>();
-        private readonly HashSet<TimeUser> _timeUserList = new HashSet<TimeUser>();
+        private readonly HashSet<TimeHolder> _timeHolderList = new();
+        private readonly HashSet<TimeUser> _timeUserList = new();
         public string key;
         [SerializeField] private string parentKey;
         public float localTimeScale = 1;
@@ -79,7 +79,7 @@ namespace Yu
             {
                 if (timeHolder == this)
                 {
-                    Debug.LogError("父TimeHolder不能是自己");
+                    GameLog.Error("父TimeHolder不能是自己");
                     return;
                 }
 
@@ -100,7 +100,7 @@ namespace Yu
         {
             if (!timeUser)
             {
-                Debug.LogError("timeUser为空");
+                GameLog.Error("timeUser为空");
                 return;
             }
 
@@ -110,12 +110,11 @@ namespace Yu
         /// <summary>
         /// 其他holder绑定自己为父holder
         /// </summary>
-        /// <param name="timeHolder"></param>
         public void Register(TimeHolder timeHolder)
         {
             if (!timeHolder)
             {
-                Debug.LogError("timeHolder为空");
+                GameLog.Error("timeHolder为空");
                 return;
             }
 
@@ -129,7 +128,7 @@ namespace Yu
         {
             if (!timeUser)
             {
-                Debug.LogError("timeUser为空");
+                GameLog.Error("timeUser为空");
                 return;
             }
 
@@ -143,7 +142,7 @@ namespace Yu
         {
             if (!timeHolder)
             {
-                Debug.LogError("timeHolder为空");
+                GameLog.Error("timeHolder为空");
                 return;
             }
 
@@ -176,7 +175,7 @@ namespace Yu
                     TimeScale = Parent.TimeScale + localTimeScale;
                     break;
                 default:
-                    Debug.LogError("没有处理这个时间混合模式" + parentBlend);
+                    GameLog.Error("没有处理这个时间混合模式" + parentBlend);
                     return;
             }
         }
@@ -189,7 +188,7 @@ namespace Yu
             switch (duration)
             {
                 case < 0:
-                    Debug.LogError("duration必须为正数");
+                    GameLog.Error("duration必须为正数");
                     break;
                 case 0:
                     localTimeScale = cacheTimeScale;
@@ -232,7 +231,7 @@ namespace Yu
                 return;
             }
 
-            Debug.LogError("找不到父TimeHolder" + parentKey);
+            GameLog.Error("找不到父TimeHolder" + parentKey);
             StartTime = UnityEngine.Time.unscaledTime;
             if (Parent != null)
             {

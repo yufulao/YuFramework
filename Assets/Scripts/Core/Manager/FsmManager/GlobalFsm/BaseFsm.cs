@@ -12,7 +12,7 @@ namespace Yu
 {
     public abstract class BaseFsm
     {
-        private Dictionary<Type, IFsmState> _fsmStateDic = new Dictionary<Type, IFsmState>();
+        private Dictionary<Type, IFsmState> _fsmStateDic = new();
         protected IFsmState CurrentState;
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace Yu
         {
             if (!_fsmStateDic.ContainsKey(stateName))
             {
-                Debug.Log("fsm里没有这个状态");
+                GameLog.Info("fsm里没有这个状态");
                 return;
             }
 
@@ -61,9 +61,9 @@ namespace Yu
                 return false;
             }
             
-            if (_fsmStateDic.ContainsKey(state))
+            if (_fsmStateDic.TryGetValue(state, out var fsmState))
             {
-                return CurrentState == _fsmStateDic[state];
+                return CurrentState == fsmState;
             }
 
             if (CurrentState is BaseFsm hfsm)

@@ -18,39 +18,36 @@ public class LoadingView : MonoBehaviour
     /// <summary>
     /// 打开窗口
     /// </summary>
-    public void OpenWindow()
+    public void OpenRoot()
     {
-        mainCanvasGroup.alpha = 0;
-        gameObject.SetActive(true);
-        GameManager.Instance.StartCoroutine(OpenRootIEnumerator());
+        GameManager.Instance.StartCoroutine(OpenRootCo());
     }
 
     /// <summary>
     /// 关闭窗口
     /// </summary>
-    public void CloseWindow()
+    public void CloseRoot()
     {
-        GameManager.Instance.StartCoroutine(CloseRootIEnumerator());
+        GameManager.Instance.StartCoroutine(CloseRootCo());
     }
-
+    
     /// <summary>
-    /// OpenRoot()的协程
+    /// 打开窗口的协程，带动画播放时长
     /// </summary>
-    /// <returns></returns>
-    private IEnumerator OpenRootIEnumerator()
+    public IEnumerator OpenRootCo()
     {
+        mainCanvasGroup.alpha = 0;
+        gameObject.SetActive(true);
         yield return Utils.PlayAnimation(animator, "LoadingEnter");
     }
 
     /// <summary>
-    /// CloseRoot()的协程
+    /// 关闭窗口的协程，带动画播放时长
     /// </summary>
-    /// <returns></returns>
-    private IEnumerator CloseRootIEnumerator()
+    public IEnumerator CloseRootCo()
     {
         mainCanvasGroup.alpha = 1;
         yield return Utils.PlayAnimation(animator, "LoadingExit");
         gameObject.SetActive(false);
-        yield return new WaitForSeconds(1f);
     }
 }

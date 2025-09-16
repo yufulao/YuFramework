@@ -14,17 +14,25 @@ namespace Yu
     public abstract class GmParameterOptionsBase<T> : IGmParameterOptions
     {
         public T Value; //实参值
+        private string _valueShow;//实参的显示内容
         
+        
+        public string GetShowValue() => _valueShow;
         
         /// <summary>
         /// 继承类提供数据源
         /// </summary>
         protected abstract object[] GetOptionsSource();
+
+        /// <summary>
+        /// 设置Value对应的显示内容
+        /// </summary>
+        protected abstract string SetShowValue(T value);
         
         /// <summary>
         /// 获取自定义参数的可选项
         /// </summary>
-        public virtual object[] GetParameterOptionArray()
+        public IGmParameterOptions[] GetParameterOptionArray()
         {
             //泛型父类通过GetType()来区分子类类型
             return GmParameterOptionCache.GetOptionArray(GetType(), GetOptions);
@@ -33,28 +41,22 @@ namespace Yu
         /// <summary>
         /// 根据数据源装载参数可选项
         /// </summary>
-        protected virtual object[] GetOptions()
+        private IGmParameterOptions[] GetOptions()
         {
             var optionsData = GetOptionsSource();
-            var options = new object[optionsData.Length];
+            var options = new IGmParameterOptions[optionsData.Length];
             for (var i = 0; i < optionsData.Length; i++)
             {
                 //因为要通过gm指令的参数类型是否继承了IGmParameterOptions接口，所以method.Invoke时也要传一致类型的参数
                 //就只能一个数据项创建一个GmParameterOptionsBase对象
                 var parameter = (GmParameterOptionsBase<T>)Activator.CreateInstance(GetType());
-                parameter.Value = (T)optionsData[i];
+                var value = (T) optionsData[i];
+                parameter.Value = value;
+                parameter._valueShow = SetShowValue(value);
                 options[i] = parameter;
             }
 
             return options;
-        }
-        
-        /// <summary>
-        /// 参数可选项显示内容
-        /// </summary>
-        public override string ToString()
-        {
-            return Value.ToString();
         }
     }
     
@@ -65,9 +67,14 @@ namespace Yu
     public interface IGmParameterOptions
     {
         /// <summary>
+        /// 获取显示内容
+        /// </summary>
+        string GetShowValue();
+        
+        /// <summary>
         /// 获取自定义参数的可选项数组
         /// </summary>
-        object[] GetParameterOptionArray();
+        IGmParameterOptions[] GetParameterOptionArray();
     }
     
     
@@ -76,13 +83,13 @@ namespace Yu
     /// </summary>
     public static class GmParameterOptionCache
     {
-        private static readonly Dictionary<Type, object[]> Cache = new Dictionary<Type, object[]>();
+        private static readonly Dictionary<Type, IGmParameterOptions[]> Cache = new Dictionary<Type, IGmParameterOptions[]>();
         
         
         /// <summary>
         /// 获取type指定的参数可选项
         /// </summary>
-        public static object[] GetOptionArray(Type type, Func<object[]> loadOptionsFunc)
+        public static IGmParameterOptions[] GetOptionArray(Type type, Func<IGmParameterOptions[]> loadOptionsFunc)
         {
             //优先检查缓存
             if (Cache.TryGetValue(type, out var options))

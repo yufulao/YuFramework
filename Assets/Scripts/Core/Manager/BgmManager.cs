@@ -5,7 +5,6 @@
 //@createTime   2024.05.18 01:28:32
 // ******************************************************************
 
-using System;
 using UnityEngine;
 using System.Collections;
 using DG.Tweening;
@@ -22,11 +21,13 @@ namespace Yu
         private RowCfgBgm _rowCfgBGM;
         private AudioSource _audioSource;
         private float _cacheBaseVolume;
+        private Tweener _cacheTweener;
+        private Coroutine _cacheCoroutine;
 
         public void OnInit()
         {
             _cfgBGM = ConfigManager.Tables.CfgBGM;
-            _audioMixer = AssetManager.Instance.LoadAsset<AudioMixer>("Assets/AddressableAssets/AudioMixer/AudioMixer.mixer");
+            _audioMixer = AssetManager.LoadAsset<AudioMixer>("Assets/AddressableAssets/AudioMixer/AudioMixer.mixer");
             _bgmMixerGroup = _audioMixer.FindMatchingGroups("BGM")[0];
             var root = new GameObject("BGMManager");
             root.transform.SetParent(GameManager.Instance.transform, false);
@@ -60,6 +61,7 @@ namespace Yu
         /// </summary>
         public void ReloadVolume()
         {
+            // _audioMixer.SetFloat("BGMVolume", SaveGameManager.Instance.Get<float>("BGMVolume", 0f, SaveType.Cfg));
         }
 
         /// <summary>
@@ -69,10 +71,9 @@ namespace Yu
         /// <param name="baseVolume">bgm初始音量</param>
         public void PlayBgm(string bgmName, float baseVolume = 1f)
         {
+            GameManager.KillCoroutine(_cacheCoroutine);
             _audioSource.Stop();
-            _rowCfgBGM = _cfgBGM[bgmName];
-            var audioClip = AssetManager.Instance.LoadAsset<AudioClip>(_rowCfgBGM.AudioClipPath);
-            PlayBgmByAudioClip(audioClip, baseVolume);
+            PlayBgmByBgmName(bgmName, baseVolume);
         }
 
         /// <summary>
@@ -80,6 +81,8 @@ namespace Yu
         /// </summary>
         public void StopBgm()
         {
+            GameManager.KillCoroutine(_cacheCoroutine);
+            _cacheTweener?.Kill();
             _audioSource.Stop();
         }
 
@@ -89,24 +92,12 @@ namespace Yu
         /// <param name="delayTime">延迟时间</param>
         /// <param name="fadeOutTime">淡出时长</param>
         /// <param name="callback">淡出至停止bgm时执行的回调</param>
-        /// <returns></returns>
         public void StopBgmFadeDelay(float delayTime, float fadeOutTime, UnityAction callback = null)
         {
-            GameManager.Instance.StartCoroutine(StopBgmFadeDelayCo(delayTime, fadeOutTime, callback));
+            GameManager.KillCoroutine(_cacheCoroutine);
+            _cacheCoroutine = GameManager.Instance.StartCoroutine(StopBgmFadeDelayCo(delayTime, fadeOutTime, callback));
         }
-
-        /// <summary>
-        /// StopBgmFadeDelay的协程
-        /// </summary>
-        public IEnumerator StopBgmFadeDelayCo(float delayTime, float fadeOutTime, UnityAction callback = null)
-        {
-            yield return new WaitForSeconds(delayTime);
-            _audioSource.DOFade(0, fadeOutTime); //音量降为0
-            yield return new WaitForSeconds(fadeOutTime);
-            StopBgm();
-            callback?.Invoke();
-        }
-
+        
         /// <summary>
         /// 淡出上一个bgm，等待间隔时间，淡入下一个bgm
         /// </summary>
@@ -117,7 +108,21 @@ namespace Yu
         /// <param name="baseVolume">初始音量</param>
         public void PlayBgmFadeDelay(string bgmName, float fadeOutTime, float delayTime, float fadeInTime, float baseVolume = 1f)
         {
-            GameManager.Instance.StartCoroutine(PlayBgmFadeDelayCo(bgmName, fadeOutTime, delayTime, fadeInTime, baseVolume));
+            GameManager.KillCoroutine(_cacheCoroutine);
+            _cacheCoroutine = GameManager.Instance.StartCoroutine(PlayBgmFadeDelayCo(bgmName, fadeOutTime, delayTime, fadeInTime, baseVolume));
+        }
+
+        /// <summary>
+        /// StopBgmFadeDelay的协程
+        /// </summary>
+        public IEnumerator StopBgmFadeDelayCo(float delayTime, float fadeOutTime, UnityAction callback = null)
+        {
+            yield return new WaitForSeconds(delayTime);
+            _cacheTweener?.Kill();
+            _cacheTweener = _audioSource.DOFade(0, fadeOutTime); //音量降为0
+            yield return _cacheTweener.WaitForCompletion();
+            _audioSource.Stop();
+            callback?.Invoke();
         }
 
         /// <summary>
@@ -125,17 +130,18 @@ namespace Yu
         /// </summary>
         public IEnumerator PlayBgmFadeDelayCo(string bgmName, float fadeOutTime, float delayTime, float fadeInTime, float baseVolume = 1f)
         {
-            //Debug.Log(bgmName);
+            //GameLog.Info(bgmName);
             _audioSource.loop = true;
-            _audioSource.DOFade(0, fadeOutTime); //音量降为0
+            _cacheTweener?.Kill();
+            _cacheTweener = _audioSource.DOFade(0, fadeOutTime); //音量降为0
             yield return new WaitForSeconds(fadeOutTime);
-            StopBgm();
+            _audioSource.Stop();
             yield return new WaitForSeconds(delayTime);
-            PlayBgm(bgmName, 0f);
-            var tweener = _audioSource.DOFade(baseVolume, fadeInTime);
+            PlayBgmByBgmName(bgmName, 0f);
+            _cacheTweener = _audioSource.DOFade(1f, fadeInTime);
             _cacheBaseVolume = baseVolume;
-            yield return tweener.WaitForCompletion();
-            // Debug.Log(_audioSource.volume);
+            yield return _cacheTweener.WaitForCompletion();
+            // GameLog.Info(_audioSource.volume);
         }
 
         /// <summary>
@@ -143,13 +149,13 @@ namespace Yu
         /// </summary>
         public void PlayLoopBgmWithIntro(string bgmNameA, string bgmNameB, float fadeOutTime, float delayTime, float fadeInTime, float baseVolume = 1f)
         {
-            GameManager.Instance.StartCoroutine(PlayLoopBgmWithIntroCo(bgmNameA, bgmNameB, fadeOutTime, delayTime, fadeInTime, baseVolume));
+            GameManager.KillCoroutine(_cacheCoroutine);
+            _cacheCoroutine = GameManager.Instance.StartCoroutine(PlayLoopBgmWithIntroCo(bgmNameA, bgmNameB, fadeOutTime, delayTime, fadeInTime, baseVolume));
         }
 
         /// <summary>
         /// bgm播放过程中设置音量
         /// </summary>
-        /// <param name="volume"></param>
         public void SetVolumeRuntime(float volume)
         {
             _audioMixer.SetFloat("BGMVolume", volume);
@@ -158,11 +164,11 @@ namespace Yu
         /// <summary>
         /// bgm播放过程中调整音量
         /// </summary>
-        /// <param name="volumeRate"></param>
         public void UpdateVolumeRuntime(float volumeRate)
         {
             var originalVolume = _audioSource.volume;
-            _audioSource.DOFade(originalVolume + originalVolume * volumeRate, 0.5f);
+            _cacheTweener?.Kill();
+            _cacheTweener = _audioSource.DOFade(originalVolume + originalVolume * volumeRate, 0.5f);
         }
 
         /// <summary>
@@ -170,7 +176,8 @@ namespace Yu
         /// </summary>
         public void ResetBgmVolume()
         {
-            _audioSource.DOFade(_cacheBaseVolume, 0.5f);
+            _cacheTweener?.Kill();
+            _cacheTweener = _audioSource.DOFade(_cacheBaseVolume, 0.5f);
         }
 
         /// <summary>
@@ -182,12 +189,22 @@ namespace Yu
         }
 
         /// <summary>
+        /// 内部调用播放
+        /// </summary>
+        private void PlayBgmByBgmName(string bgmName, float baseVolume = 1f)
+        {
+            _rowCfgBGM = _cfgBGM[bgmName];
+            var audioClip = AssetManager.LoadAsset<AudioClip>(_rowCfgBGM.AudioClipPath);
+            PlayBgmByAudioClip(audioClip, baseVolume);
+        }
+        
+        /// <summary>
         /// 播放AudioClip
         /// </summary>
-        /// <param name="clip"></param>
-        /// <param name="baseVolume"></param>
         private void PlayBgmByAudioClip(AudioClip clip, float baseVolume)
         {
+            // GameLog.Info(clip.name);
+            _cacheTweener?.Kill();
             _audioSource.clip = clip;
             _audioSource.Play();
             _audioSource.volume = baseVolume;
@@ -197,18 +214,18 @@ namespace Yu
         /// <summary>
         /// PlayLoopBgmWithIntro的协程
         /// </summary>
-        /// <returns></returns>
         private IEnumerator PlayLoopBgmWithIntroCo(string bgmNameA, string bgmNameB, float fadeOutTime, float delayTime, float fadeInTime, float baseVolume = 1f)
         {
-            var audioClipA = AssetManager.Instance.LoadAsset<AudioClip>(_cfgBGM[bgmNameA].AudioClipPath);
-            var audioClipB = AssetManager.Instance.LoadAsset<AudioClip>(_cfgBGM[bgmNameB].AudioClipPath);
+            var audioClipA = AssetManager.LoadAsset<AudioClip>(_cfgBGM[bgmNameA].AudioClipPath);
+            var audioClipB = AssetManager.LoadAsset<AudioClip>(_cfgBGM[bgmNameB].AudioClipPath);
             _audioSource.loop = true;
-            _audioSource.DOFade(0, fadeOutTime); //音量降为0
-            yield return new WaitForSeconds(fadeOutTime);
-            StopBgm();
+            _cacheTweener?.Kill();
+            _cacheTweener = _audioSource.DOFade(0, fadeOutTime); //音量降为0
+            yield return _cacheTweener.WaitForCompletion();
+            _audioSource.Stop();
             yield return new WaitForSeconds(delayTime);
             PlayBgmByAudioClip(audioClipA, 0f);
-            _audioSource.DOFade(baseVolume, fadeInTime);
+            _cacheTweener = _audioSource.DOFade(baseVolume, fadeInTime);
             yield return new WaitForSeconds(audioClipA.length);
             PlayBgmByAudioClip(audioClipB, baseVolume);
         }

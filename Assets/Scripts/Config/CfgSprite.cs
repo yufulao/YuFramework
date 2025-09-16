@@ -13,12 +13,12 @@ using Luban;
 
 public partial class CfgSprite
 {
-    private readonly System.Collections.Generic.Dictionary<string, RowCfgSprite> _dataMap;
+    private readonly System.Collections.Generic.Dictionary<int, RowCfgSprite> _dataMap;
     private readonly System.Collections.Generic.List<RowCfgSprite> _dataList;
     
     public CfgSprite(ByteBuf _buf)
     {
-        _dataMap = new System.Collections.Generic.Dictionary<string, RowCfgSprite>();
+        _dataMap = new System.Collections.Generic.Dictionary<int, RowCfgSprite>();
         _dataList = new System.Collections.Generic.List<RowCfgSprite>();
         
         for(int n = _buf.ReadSize() ; n > 0 ; --n)
@@ -30,12 +30,12 @@ public partial class CfgSprite
         }
     }
 
-    public System.Collections.Generic.Dictionary<string, RowCfgSprite> DataMap => _dataMap;
+    public System.Collections.Generic.Dictionary<int, RowCfgSprite> DataMap => _dataMap;
     public System.Collections.Generic.List<RowCfgSprite> DataList => _dataList;
 
-    public RowCfgSprite GetOrDefault(string key) => _dataMap.TryGetValue(key, out var v) ? v : null;
-    public RowCfgSprite Get(string key) => _dataMap[key];
-    public RowCfgSprite this[string key] => _dataMap[key];
+    public RowCfgSprite GetOrDefault(int key) => _dataMap.TryGetValue(key, out var v) ? v : null;
+    public RowCfgSprite Get(int key) => _dataMap[key];
+    public RowCfgSprite this[int key] => _dataMap[key];
 
     public void ResolveRef(Tables tables)
     {

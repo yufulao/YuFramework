@@ -13,7 +13,7 @@ using Object = UnityEngine.Object;
 public class HUDManager : BaseSingleTon<HUDManager>
 {
     public Transform Root { get; private set; }
-    private readonly Dictionary<string, HUDBase> _hudDict = new Dictionary<string, HUDBase>();
+    private readonly Dictionary<string, HUDBase> _hudDict = new();
 
 
     /// <summary>
@@ -34,7 +34,7 @@ public class HUDManager : BaseSingleTon<HUDManager>
             return hudExist;
         }
 
-        var objOriginal = AssetManager.Instance.LoadAssetGameObject(ConfigManager.Tables.CfgHUD[hudName].UiPath);
+        var objOriginal = AssetManager.LoadAssetGameObject(ConfigManager.Tables.CfgHUD[hudName].UiPath);
         var obj = Object.Instantiate(objOriginal, Root);
         var hud = obj.GetComponent<HUDBase>();
         _hudDict[hudName] = hud;
@@ -44,6 +44,9 @@ public class HUDManager : BaseSingleTon<HUDManager>
         return hud;
     }
     
+    /// <summary>
+    /// 获取指定HUDBase
+    /// </summary>
     public T GetHUD<T>(string hudName) where T : HUDBase
     {
         var hud = GetHUD(hudName);

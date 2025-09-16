@@ -8,9 +8,9 @@ public class GMGridCell : GridCell<GMMethodData, GMGridContext>
 {
     [SerializeField] private Button btnExecute;
     [SerializeField] private TextMeshProUGUI textMethodName;
-    [SerializeField] private List<TextMeshProUGUI> textParameterDescList = new List<TextMeshProUGUI>();
-    [SerializeField] private List<TMP_InputField> inputFieldParameterList = new List<TMP_InputField>();
-    [SerializeField] private List<TMP_Dropdown_Event> dropdownParameterList = new List<TMP_Dropdown_Event>();
+    [SerializeField] private List<TextMeshProUGUI> textParameterDescList = new();
+    [SerializeField] private List<TMP_InputField> inputFieldParameterList = new();
+    [SerializeField] private List<TMP_Dropdown_Event> dropdownParameterList = new();
 
     private GMMethodData _cacheMethodData;
 
@@ -27,7 +27,7 @@ public class GMGridCell : GridCell<GMMethodData, GMGridContext>
         var parameterCount = methodData.ParametersData.Length;
         if (parameterCount > inputFieldParameterList.Count || parameterCount > dropdownParameterList.Count)
         {
-            Debug.LogError("参数数量过多" + methodData.CommandDesc);
+            GameLog.Error("参数数量过多" + methodData.CommandDesc);
             return;
         }
 
@@ -73,7 +73,7 @@ public class GMGridCell : GridCell<GMMethodData, GMGridContext>
         var optionList = new List<string>();
         foreach (var optionObj in parameterData.ParameterOptionArray)
         {
-            optionList.Add(optionObj.ToString());
+            optionList.Add(optionObj.GetShowValue());
         }
 
         dropdown.UpdateOptions(optionList);
@@ -130,7 +130,6 @@ public class GMGridCell : GridCell<GMMethodData, GMGridContext>
     /// <summary>
     /// 获取当前的参数
     /// </summary>
-    /// <returns></returns>
     private (bool, object[]) GetCurrentParameters()
     {
         var parameterNeedCount = _cacheMethodData.ParametersData.Length;

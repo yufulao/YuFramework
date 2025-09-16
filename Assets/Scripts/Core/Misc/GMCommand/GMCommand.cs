@@ -16,7 +16,9 @@ namespace Yu
     public partial class GMCommand
     {
         public static bool HadInit { get; private set; }
-        public static List<GMMethodData> MethodDataList { get; } = new List<GMMethodData>(); //所有的GMMethodData
+        public static List<GMMethodData> MethodDataList { get; } = new(); // 所有的GMMethodData
+        public static readonly GMFilter Filter = new();
+        // public static List<Type> ClassDataList { get; } = new(); // 所有的GM类型
 
 
         /// <summary>
@@ -24,46 +26,43 @@ namespace Yu
         /// </summary>
         public static async Task OnInit()
         {
-            var step = 0;
             var tasks = new List<Task>();
 
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 tasks.Add(Task.Run(() =>
                 {
-                    step++;
                     try
                     {
                         foreach (var type in assembly.GetExportedTypes())
                         {
-                            step++;
+                            var catalog = GMCatalogAttribute.NoCatalog;
+                            foreach (var attrCatalog in type.GetCustomAttributes<GMCatalogAttribute>(false))
+                            {
+                                catalog = attrCatalog.Catalog;
+                            }
+                            
                             foreach (var method in type.GetMethods())
                             {
-                                step++;
-                                foreach (var attribute in method.GetCustomAttributes(typeof(GMMethodAttribute), false))
+                                foreach (var attrMethod in method.GetCustomAttributes<GMMethodAttribute>(false))
                                 {
-                                    step++;
-                                    if (attribute is GMMethodAttribute consoleMethod)
-                                    {
-                                        AddCommand(method, null, consoleMethod.CommandDesc, consoleMethod.ParametersDesc);
-                                    }
+                                    AddCommand(method, null, catalog, attrMethod.CommandDesc, attrMethod.ParametersDesc);
                                 }
                             }
                         }
                     }
                     catch (Exception)
                     {
-                        // Debug.LogError($"assembly:{assembly.GetName().Name} 查找GM指令时有误:\n{e}");
+                        // GameLog.Error($"assembly:{assembly.GetName().Name} 查找GM指令时有误:\n{e}");
                     }
-                    // Debug.Log(assembly.GetName().Name);
+                    // GameLog.Info(assembly.GetName().Name);
                 }));
             }
-
-            // Debug.Log(step);
+            
             await Task.WhenAll(tasks);
             // foreach (var methodData in MethodDataList)
             // {
-            //     Debug.Log(methodData.ToString());
+            //     GameLog.Info(methodData.ToString());
             // }
             HadInit = true;
         }
@@ -89,21 +88,22 @@ namespace Yu
 
             if (result == null || result.Equals(null))
             {
-                Debug.Log("return: null");
+                GameLog.Info("return: null");
                 return;
             }
 
-            Debug.Log("return: " + result);
+            GameLog.Info("return: " + result);
         }
 
         /// <summary>
         /// 添加指令
         /// </summary>
-        private static void AddCommand(MethodInfo method, object instance, string commandDesc, string[] parametersDesc)
+        // private static void AddCommand(MethodInfo method, object instance, string commandDesc, string[] parametersDesc)
+        private static void AddCommand(MethodInfo method, object instance, string catalog, string commandDesc, string[] parametersDesc)
         {
             if (string.IsNullOrEmpty(commandDesc))
             {
-                Debug.LogError("指令为空");
+                GameLog.Error("指令为空");
                 return;
             }
 
@@ -120,12 +120,13 @@ namespace Yu
             //var parameterDesc = GetParameterDesc(commandName, parameterNames, parameters, parameterTypes);
             if (parametersType.Length != parametersDesc.Length)
             {
-                Debug.LogError($"gm指令->{method.Name}，参数描述的个数有误");
+                GameLog.Error($"gm指令->{method.Name}，参数描述的个数有误");
                 return;
             }
 
             var parametersData = CreateParametersData(parameters, parametersDesc);
-            var methodData = new GMMethodData(method, instance, commandDesc, parametersData);
+            // var methodData = new GMMethodData(method, instance, commandDesc, parametersData);
+            var methodData = new GMMethodData(method, instance, catalog, commandDesc, parametersData);
             MethodDataList.Insert(commandIndex, methodData);
         }
 
@@ -173,7 +174,6 @@ namespace Yu
         /// <summary>
         /// 封装gm指令的parameterData
         /// </summary>
-        /// <returns></returns>
         private static GMParameterData[] CreateParametersData(ParameterInfo[] parametersInfo, string[] parametersDesc)
         {
             var parametersData = new GMParameterData[parametersInfo.Length];
@@ -188,7 +188,6 @@ namespace Yu
         /// <summary>
         /// 检测参数类型是否支持
         /// </summary>
-        /// <returns></returns>
         private static bool CheckAndSetParamTypeValid(IReadOnlyList<ParameterInfo> parameters, IList<Type> parameterTypes)
         {
             for (var i = 0; i < parameters.Count; i++)
@@ -196,7 +195,7 @@ namespace Yu
                 var parameterType = parameters[i].ParameterType;
                 if (parameterType.IsByRef)
                 {
-                    Debug.LogError("指令不支持ref和out");
+                    GameLog.Error("指令不支持ref和out");
                     return false;
                 }
 
@@ -209,7 +208,7 @@ namespace Yu
                     continue;
                 }
 
-                Debug.LogError(string.Concat("不支持参数", parameters[i].Name, "的类型：", parameterType));
+                GameLog.Error(string.Concat("不支持参数", parameters[i].Name, "的类型：", parameterType));
                 return false;
             }
 

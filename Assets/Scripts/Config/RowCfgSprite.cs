@@ -15,7 +15,7 @@ public sealed partial class RowCfgSprite : Luban.BeanBase
 {
     public RowCfgSprite(ByteBuf _buf) 
     {
-        Id = _buf.ReadString();
+        Id = _buf.ReadInt();
         SpritePath = _buf.ReadString();
     }
 
@@ -27,7 +27,7 @@ public sealed partial class RowCfgSprite : Luban.BeanBase
     /// <summary>
     /// sprite名
     /// </summary>
-    public readonly string Id;
+    public readonly int Id;
     /// <summary>
     /// 预设路径
     /// </summary>

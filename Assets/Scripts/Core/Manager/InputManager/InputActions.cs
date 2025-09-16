@@ -312,6 +312,24 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""GM"",
+                    ""type"": ""Button"",
+                    ""id"": ""66991797-d0cc-48c6-8d7b-bec3ea5f0dac"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""InspirationCatalog"",
+                    ""type"": ""Button"",
+                    ""id"": ""4b9f5f09-0c34-414b-9903-2756b7a8976e"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -688,32 +706,26 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""action"": ""Click"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
-                }
-            ]
-        },
-        {
-            ""name"": ""GM"",
-            ""id"": ""01599302-460e-4de5-b13f-6ead43476c50"",
-            ""actions"": [
-                {
-                    ""name"": ""Open"",
-                    ""type"": ""Button"",
-                    ""id"": ""97c04932-6436-4c90-9df3-c0a8b6f68054"",
-                    ""expectedControlType"": ""Button"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                }
-            ],
-            ""bindings"": [
+                },
                 {
                     ""name"": """",
-                    ""id"": ""d9636e5c-6f83-4dcf-9ab8-59bdcb16e2b0"",
+                    ""id"": ""9a12539b-381c-4a04-97f7-44141ea3fae7"",
                     ""path"": ""<Keyboard>/backquote"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Open"",
+                    ""action"": ""GM"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b8ffbc12-a631-467f-a202-3afe9b759c42"",
+                    ""path"": ""<Keyboard>/n"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""InspirationCatalog"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -741,9 +753,8 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         m_UI_TrackedDeviceOrientation = m_UI.FindAction("TrackedDeviceOrientation", throwIfNotFound: true);
         m_UI_Hold = m_UI.FindAction("Hold", throwIfNotFound: true);
         m_UI_Click = m_UI.FindAction("Click", throwIfNotFound: true);
-        // GM
-        m_GM = asset.FindActionMap("GM", throwIfNotFound: true);
-        m_GM_Open = m_GM.FindAction("Open", throwIfNotFound: true);
+        m_UI_GM = m_UI.FindAction("GM", throwIfNotFound: true);
+        m_UI_InspirationCatalog = m_UI.FindAction("InspirationCatalog", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -886,6 +897,8 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_UI_TrackedDeviceOrientation;
     private readonly InputAction m_UI_Hold;
     private readonly InputAction m_UI_Click;
+    private readonly InputAction m_UI_GM;
+    private readonly InputAction m_UI_InspirationCatalog;
     public struct UIActions
     {
         private @InputActions m_Wrapper;
@@ -901,6 +914,8 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         public InputAction @TrackedDeviceOrientation => m_Wrapper.m_UI_TrackedDeviceOrientation;
         public InputAction @Hold => m_Wrapper.m_UI_Hold;
         public InputAction @Click => m_Wrapper.m_UI_Click;
+        public InputAction @GM => m_Wrapper.m_UI_GM;
+        public InputAction @InspirationCatalog => m_Wrapper.m_UI_InspirationCatalog;
         public InputActionMap Get() { return m_Wrapper.m_UI; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -943,6 +958,12 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @Click.started += instance.OnClick;
             @Click.performed += instance.OnClick;
             @Click.canceled += instance.OnClick;
+            @GM.started += instance.OnGM;
+            @GM.performed += instance.OnGM;
+            @GM.canceled += instance.OnGM;
+            @InspirationCatalog.started += instance.OnInspirationCatalog;
+            @InspirationCatalog.performed += instance.OnInspirationCatalog;
+            @InspirationCatalog.canceled += instance.OnInspirationCatalog;
         }
 
         private void UnregisterCallbacks(IUIActions instance)
@@ -980,6 +1001,12 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @Click.started -= instance.OnClick;
             @Click.performed -= instance.OnClick;
             @Click.canceled -= instance.OnClick;
+            @GM.started -= instance.OnGM;
+            @GM.performed -= instance.OnGM;
+            @GM.canceled -= instance.OnGM;
+            @InspirationCatalog.started -= instance.OnInspirationCatalog;
+            @InspirationCatalog.performed -= instance.OnInspirationCatalog;
+            @InspirationCatalog.canceled -= instance.OnInspirationCatalog;
         }
 
         public void RemoveCallbacks(IUIActions instance)
@@ -997,52 +1024,6 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         }
     }
     public UIActions @UI => new UIActions(this);
-
-    // GM
-    private readonly InputActionMap m_GM;
-    private List<IGMActions> m_GMActionsCallbackInterfaces = new List<IGMActions>();
-    private readonly InputAction m_GM_Open;
-    public struct GMActions
-    {
-        private @InputActions m_Wrapper;
-        public GMActions(@InputActions wrapper) { m_Wrapper = wrapper; }
-        public InputAction @Open => m_Wrapper.m_GM_Open;
-        public InputActionMap Get() { return m_Wrapper.m_GM; }
-        public void Enable() { Get().Enable(); }
-        public void Disable() { Get().Disable(); }
-        public bool enabled => Get().enabled;
-        public static implicit operator InputActionMap(GMActions set) { return set.Get(); }
-        public void AddCallbacks(IGMActions instance)
-        {
-            if (instance == null || m_Wrapper.m_GMActionsCallbackInterfaces.Contains(instance)) return;
-            m_Wrapper.m_GMActionsCallbackInterfaces.Add(instance);
-            @Open.started += instance.OnOpen;
-            @Open.performed += instance.OnOpen;
-            @Open.canceled += instance.OnOpen;
-        }
-
-        private void UnregisterCallbacks(IGMActions instance)
-        {
-            @Open.started -= instance.OnOpen;
-            @Open.performed -= instance.OnOpen;
-            @Open.canceled -= instance.OnOpen;
-        }
-
-        public void RemoveCallbacks(IGMActions instance)
-        {
-            if (m_Wrapper.m_GMActionsCallbackInterfaces.Remove(instance))
-                UnregisterCallbacks(instance);
-        }
-
-        public void SetCallbacks(IGMActions instance)
-        {
-            foreach (var item in m_Wrapper.m_GMActionsCallbackInterfaces)
-                UnregisterCallbacks(item);
-            m_Wrapper.m_GMActionsCallbackInterfaces.Clear();
-            AddCallbacks(instance);
-        }
-    }
-    public GMActions @GM => new GMActions(this);
     public interface IPlayerControlActions
     {
         void OnMovement(InputAction.CallbackContext context);
@@ -1063,9 +1044,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         void OnTrackedDeviceOrientation(InputAction.CallbackContext context);
         void OnHold(InputAction.CallbackContext context);
         void OnClick(InputAction.CallbackContext context);
-    }
-    public interface IGMActions
-    {
-        void OnOpen(InputAction.CallbackContext context);
+        void OnGM(InputAction.CallbackContext context);
+        void OnInspirationCatalog(InputAction.CallbackContext context);
     }
 }

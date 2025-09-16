@@ -10,19 +10,17 @@ namespace Yu
 {
     public class FsmManager : BaseSingleTon<FsmManager>, IMonoManager
     {
-        private readonly Dictionary<string, BaseFsm> _fsmDict = new Dictionary<string, BaseFsm>();
+        private readonly Dictionary<string, BaseFsm> _fsmDict = new();
 
         /// <summary>
         /// 获取状态机
         /// </summary>
-        /// <typeparam name="T">状态机类型</typeparam>
-        /// <returns></returns>
         public T GetFsm<T>() where T : BaseFsm, new()
         {
             var fsmName = typeof(T).ToString();
-            if (_fsmDict.ContainsKey(fsmName))
+            if (_fsmDict.TryGetValue(fsmName, out var fsm))
             {
-                return _fsmDict[fsmName] as T;
+                return fsm as T;
             }
 
             var newFsm = new T();

@@ -34,29 +34,32 @@ namespace Yu
             {
                 _poolStack.Push(CreateNewObject());
             }
-            // Debug.Log(typeof(T)+"     "+_poolStack.Count);
+            // GameLog.Info(typeof(T)+"     "+_poolStack.Count);
         }
 
         /// <summary>
         /// 获取对象
         /// </summary>
-        /// <returns></returns>
         public T Get()
         {
-            if (_poolStack.Count == 0)
+            while (true)
             {
-                _poolStack.Push(CreateNewObject());
-            }
+                if (_poolStack.Count == 0)
+                {
+                    _poolStack.Push(CreateNewObject());
+                }
 
-            var obj = _poolStack.Pop();
-            if (obj.Active)
-            {
-                Debug.LogWarning("错误引用，弹出了活跃的obj，尝试修正stack");
-                return Get();
+                var obj = _poolStack.Pop();
+                if (obj.Active)
+                {
+                    GameLog.Warn("错误引用，弹出了活跃的obj，尝试修正stack");
+                    continue;
+                }
+
+                obj.OnActivate();
+                _activeObjects.Add(obj);
+                return obj;
             }
-            obj.OnActivate();
-            _activeObjects.Add(obj);
-            return obj;
         }
 
         /// <summary>
@@ -66,7 +69,7 @@ namespace Yu
         {
             if (!obj.Active)
             {
-                Debug.LogWarning("错误引用，或回收了闲置的obj，可能重复回收");
+                GameLog.Warn("错误引用，或回收了闲置的obj，可能重复回收");
                 return;
             }
             
@@ -91,7 +94,7 @@ namespace Yu
             //处理活跃对象
             foreach (var obj in _activeObjects)
             {
-                
+                break;
             }
             
             //处理闲置对象
@@ -113,7 +116,7 @@ namespace Yu
                 {
                     obj.OnIdleDestroy();
                     //不压回栈中以解除引用，gc识别释放内存
-                    Debug.Log("销毁obj");
+                    //GameLog.Info("销毁obj");
                     continue;
                 }
 
@@ -126,7 +129,6 @@ namespace Yu
         /// <summary>
         /// 创建新的对象实例
         /// </summary>
-        /// <returns></returns>
         private T CreateNewObject()
         {
             return _objectGenerator();
